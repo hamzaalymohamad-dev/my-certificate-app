@@ -1,1 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div class="card">
+        <h1>Event Feedback</h1>
+        <p>Fill this out to get your certificate.</p>
+        
+        <input type="text" id="userName" placeholder="Your Name">
+        <input type="email" id="userEmail" placeholder="Your Email">
+        
+        <select id="topic">
+            <option>Select a Topic</option>
+            <option value="Topic 1">Introduction to AI</option>
+            <option value="Topic 2">Modern Web Design</option>
+        </select>
+
+        <button onclick="startProcess()">Submit</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
