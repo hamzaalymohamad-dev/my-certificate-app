@@ -11,7 +11,7 @@
 <body>
     <div class="watermark-bg"></div>
 
-    <div class="card" id="main-container">
+    <div class="card">
         <div class="header-section">
             <div class="logo-row">
                 <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo" alt="Critical Care Logo">
@@ -32,7 +32,7 @@
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" id="userEmail" placeholder="Example: name@mft.nhs.uk" required>
+                    <input type="email" id="userEmail" placeholder="e.g. name@mft.nhs.uk" required>
                 </div>
             </div>
 
@@ -40,7 +40,7 @@
 
             <div class="overall-feedback">
                 <label><strong>General Feedback on the Whole Day</strong></label>
-                <textarea id="generalFeedback" placeholder="What went well? What could be improved?"></textarea>
+                <textarea id="generalFeedback" placeholder="What went well? Any suggestions for next time?"></textarea>
             </div>
 
             <button type="button" class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
@@ -51,22 +51,29 @@
                 <h3>Admin Dashboard</h3>
                 <button class="btn-danger" onclick="location.reload()">Logout</button>
             </div>
+
             <div class="admin-tabs">
-                <button class="tab-btn active" id="btn-tab-setup" onclick="showTab('setup')">Agenda</button>
-                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
+                <button class="tab-btn active" id="btn-tab-setup" onclick="showTab('setup')">Manage Agenda</button>
+                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Feedback Analysis</button>
             </div>
+
             <div id="tab-setup" class="tab-content">
                 <div class="control-box">
                     <label>Event Date:</label>
                     <input type="text" id="admin-date-input" onchange="updateGlobalDate(this.value)">
                 </div>
                 <div id="admin-agenda-list"></div>
-                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
+                <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
             </div>
+
             <div id="tab-analysis" class="tab-content" style="display:none;">
                 <div class="control-box">
-                    <button class="btn-sec" onclick="document.getElementById('csv-file-input').click()">📁 Upload CSV</button>
+                    <h4>Live Data Importer</h4>
+                    <p>Upload the Web3Forms CSV export to generate charts.</p>
+                    <button class="btn-sec" onclick="document.getElementById('csv-file-input').click()">📁 Upload CSV File</button>
                     <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
+                    <textarea id="raw-data-input" placeholder="Or paste raw text here..." style="margin-top:10px; height:60px;"></textarea>
+                    <button class="btn-primary" style="width:auto; padding:10px 20px; margin-top:10px;" onclick="processImportedData()">Generate Analysis</button>
                 </div>
                 <div id="analysis-results"></div>
             </div>
@@ -77,6 +84,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=1300"></script>
+    <script src="app.js"></script>
 </body>
 </html>
