@@ -1,4 +1,5 @@
-// 1. Fixed: Added quotes around the Public Key
+// WRONG (No quotes): emailjs.init(N9nzTwaMwjXe8rVEv);
+// CORRECT (With quotes): 
 emailjs.init("N9nzTwaMwjXe8rVEv");
 
 async function startProcess() {
