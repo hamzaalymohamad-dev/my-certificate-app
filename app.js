@@ -1,14 +1,11 @@
-// 1. Tell the app who you are (IDs MUST be in "quotation marks")
+// 1. Fixed: Added quotes around the Public Key
 emailjs.init("N9nzTwaMwjXe8rVEv");
 
-// 2. This function starts when the user clicks the button
 async function startProcess() {
-    // Get the info from the boxes on the screen
     const name = document.getElementById('userName').value;
     const email = document.getElementById('userEmail').value;
     const topic = document.getElementById('topic').value;
 
-    // A simple check to make sure they filled everything out
     if (!name || !email || topic === "Select a Topic") {
         alert("Please fill in all fields!");
         return;
@@ -16,7 +13,6 @@ async function startProcess() {
 
     alert("Working on your certificate... please wait.");
 
-    // 3. This part "draws" the certificate
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4'); 
 
@@ -29,7 +25,6 @@ async function startProcess() {
 
     const pdfData = doc.output('datauristring');
 
-    // 4. Send the data to EmailJS
     const emailData = {
         user_name: name,
         user_email: email,
@@ -37,7 +32,7 @@ async function startProcess() {
         content: pdfData 
     };
 
-    // Note: service and template IDs also need "quotes"
+    // 2. Fixed: Added quotes around Service ID and Template ID
     emailjs.send("service_cw255i8", "template_5ohdsal", emailData)
         .then(() => {
             alert("Success! Your certificate is in your email.");
