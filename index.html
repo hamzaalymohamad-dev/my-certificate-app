@@ -3,32 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback & Certificate App</title>
-    
+    <title>Critical Care ACE Day Feedback</title>
     <link rel="stylesheet" href="style.css">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
 
     <div class="card">
-        <h1>Event Feedback</h1>
-        <p>Fill this out to get your certificate.</p>
+        <h2>Critical Care ACE Day</h2>
+        <p>Audit & Clinical Effectiveness Collaborative</p>
+        <hr>
         
-        <input type="text" id="userName" placeholder="Your Name" required>
-        <input type="email" id="userEmail" placeholder="Your Email" required>
-        
-        <select id="topic">
-            <option value="Select a Topic">Select a Topic</option>
-            <option value="Introduction to AI">Introduction to AI</option>
-            <option value="Modern Web Design">Modern Web Design</option>
-        </select>
+        <div class="form-group">
+            <input type="text" id="userName" placeholder="Full Name (for certificate)" required>
+            <input type="email" id="userEmail" placeholder="Email Address" required>
+        </div>
 
-        <button type="button" onclick="startProcess()">Submit & Get Certificate</button>
+        <div class="form-group">
+            <label for="topic">Select the Session Attended:</label>
+            <select id="topic">
+                <option value="Select a Session">-- Choose Session --</option>
+                <option value="ICU Echo Audit" data-presenter="Steve Benington, Suraj, Vikas & Hussein">ICU Echo Audit</option>
+                <option value="Vancomycin Infusions Re-Audit" data-presenter="Anna Tilley">Vancomycin Infusions Re-Audit</option>
+                <option value="Critical Care Updates" data-presenter="Evangelos Boultoukas">Critical Care Updates</option>
+                <option value="Critical Care Ethics" data-presenter="Bernard Foex">Critical Care Ethics</option>
+                <option value="PICC Line Service at ORC" data-presenter="Ruth Wynn">PICC Line Service at ORC</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="feedback">Session Feedback:</label>
+            <textarea id="feedback" placeholder="How will this session impact your practice?" rows="4"></textarea>
+        </div>
+
+        <button type="button" onclick="startProcess()">Submit Feedback & Download Certificate</button>
     </div>
 
-    <script src="app.js?v=101"></script>
+    <script src="app.js?v=102"></script>
 </body>
 </html>
