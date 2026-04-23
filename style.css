@@ -1,59 +1,115 @@
+/* 1. Global Reset */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f7f9;
+    background-color: #f0f2f5; /* Light medical grey/blue background */
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
 }
 
+/* 2. The Main Container Card */
 .card {
-    background: white;
+    background: #ffffff;
+    width: 90%;
+    max-width: 600px;
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 500px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    border-top: 8px solid #005eb8; /* NHS Blue accent */
 }
 
-h2 { color: #003366; margin-bottom: 5px; text-align: center; }
-p { color: #666; text-align: center; margin-bottom: 20px; font-size: 0.9em; }
+/* 3. Typography */
+h2 {
+    color: #002f5c;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 28px;
+    text-align: center;
+}
 
-.form-group { margin-bottom: 20px; }
+p {
+    color: #555;
+    text-align: center;
+    line-height: 1.6;
+    margin: 5px 0;
+}
 
-label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+hr {
+    border: 0;
+    height: 1px;
+    background: #eee;
+    margin: 25px 0;
+}
 
-input, select, textarea {
+/* 4. Form Layout */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* 5. Inputs & Selects */
+input[type="text"],
+input[type="email"],
+select,
+textarea {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
     border-radius: 6px;
-    box-sizing: border-box; /* Crucial for alignment */
     font-size: 16px;
+    box-sizing: border-box; /* Fixes the squashed look */
+    background-color: #fafafa;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #005eb8;
+    box-shadow: 0 0 0 3px rgba(0, 94, 184, 0.1);
+    background-color: #fff;
+}
+
+/* 6. Rating Section Highlight */
+.rating-box {
+    background: #f8fbff;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e1e8f0;
+    margin-bottom: 15px;
+}
+
+/* 7. Button Style */
 button {
     width: 100%;
-    background-color: #0056b3;
+    background-color: #005eb8;
     color: white;
-    padding: 15px;
+    padding: 16px;
     border: none;
     border-radius: 6px;
     font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
+    margin-top: 10px;
     transition: background 0.3s;
 }
 
-button:hover { background-color: #003d80; }
-.rating-box {
-    background: #f0f4f8;
-    padding: 10px;
-    border-radius: 8px;
-    border-left: 4px solid #0056b3;
+button:hover {
+    background-color: #003d7a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-label {
-    font-size: 0.9em;
-    color: #444;
-    margin-bottom: 5px;
+
+/* 8. Make it look good on mobile */
+@media (max-width: 480px) {
+    .card {
+        padding: 20px;
+    }
 }
