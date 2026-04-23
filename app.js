@@ -16,7 +16,6 @@ window.onload = () => {
     renderUserForm(); 
 };
 
-// --- USER FORM FUNCTIONS ---
 function renderUserForm() {
     const container = document.getElementById('sessions-container');
     container.innerHTML = "";
@@ -28,9 +27,13 @@ function renderUserForm() {
                     <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
                 </div>
                 <div class="session-body" id="body-${item.id}">
-                    <div class="rating-grid">
-                        <select id="r1-${item.id}"><option value="">Content Rating...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
-                        <select id="r2-${item.id}"><option value="">Delivery Rating...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
+                    <div class="rating-row">
+                        <span>Presentation content:</span>
+                        <select id="r1-${item.id}"><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
+                    </div>
+                    <div class="rating-row">
+                        <span>Presentation delivery:</span>
+                        <select id="r2-${item.id}"><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                     </div>
                     <textarea id="comm-${item.id}" placeholder="Comments for this session..."></textarea>
                 </div>
@@ -51,32 +54,23 @@ async function startProcess() {
     if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return alert("Please enter a valid email address.");
 
     let usedEmails = JSON.parse(localStorage.getItem('submitted_emails') || "[]");
-    if(usedEmails.includes(email.toLowerCase())) {
-        return alert("You have already submitted feedback for this session.");
-    }
+    if(usedEmails.includes(email.toLowerCase())) return alert("You have already submitted feedback.");
 
     let attended = [];
     let msg = `OVERALL DAY FEEDBACK: ${general}\n\n`;
     agenda.forEach(item => {
         if(!document.getElementById(`na-${item.id}`).checked) {
             attended.push(item.title);
-            msg += `[${item.title}] Content: ${document.getElementById(`r1-${item.id}`).value}, Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
+            msg += `[${item.title}] Presentation Content: ${document.getElementById(`r1-${item.id}`).value}, Presentation Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
         }
     });
 
     usedEmails.push(email.toLowerCase());
     localStorage.setItem('submitted_emails', JSON.stringify(usedEmails));
 
-    // UI Transformation
-    document.getElementById('user-view').innerHTML = `
-        <div style="text-align:center; padding:40px;">
-            <h2 style="color:#28a745;">✓ Thank You</h2>
-            <p>Your feedback has been received and your certificate is downloading.</p>
-            <button class="btn-sec" onclick="location.reload()">Return Home</button>
-        </div>`;
+    document.getElementById('user-view').innerHTML = `<div style="text-align:center; padding:40px;"><h2 style="color:#28a745;">✓ Thank You</h2><p>Certificate downloading. Please click the link again for future access.</p></div>`;
 
     await generateCert(name, attended, false);
-    
     fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,7 +78,7 @@ async function startProcess() {
     });
 }
 
-// --- ADMIN & ANALYSIS FUNCTIONS ---
+// --- ADMIN FUNCTIONS ---
 function checkAdmin() {
     if (prompt("Admin Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
@@ -106,15 +100,9 @@ function renderAdminAgenda() {
     agenda.forEach((item, index) => {
         list.innerHTML += `
             <div class="admin-session-box">
-                <div class="admin-row">
-                    <input type="text" style="width:70px" value="${item.time}" onchange="updateAgenda(${index}, 'time', this.value)">
-                    <input type="text" value="${item.title}" onchange="updateAgenda(${index}, 'title', this.value)">
-                    <button class="btn-del" onclick="removeSession(${index})">×</button>
-                </div>
+                <div class="admin-row"><input type="text" style="width:70px" value="${item.time}" onchange="updateAgenda(${index}, 'time', this.value)"><input type="text" value="${item.title}" onchange="updateAgenda(${index}, 'title', this.value)"><button class="btn-del" onclick="removeSession(${index})">×</button></div>
                 <input type="text" value="${item.speakers.join(', ')}" onchange="updateSpeakers(${index}, this.value)">
-                <div class="btn-row">
-                    ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Cert: ${s}</button>`).join('')}
-                </div>
+                <div class="btn-row">${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Cert: ${s}</button>`).join('')}</div>
             </div>`;
     });
 }
@@ -128,10 +116,7 @@ function updateGlobalDate(v) { eventDate = v; localStorage.setItem('ace_date', v
 
 function handleFileUpload(event) {
     const reader = new FileReader();
-    reader.onload = (e) => {
-        document.getElementById('raw-data-input').value = e.target.result;
-        processImportedData();
-    };
+    reader.onload = (e) => { document.getElementById('raw-data-input').value = e.target.result; processImportedData(); };
     reader.readAsText(event.target.files[0]);
 }
 
@@ -141,79 +126,67 @@ function processImportedData() {
     container.innerHTML = "";
 
     agenda.forEach((session, idx) => {
-        const matches = data.match(new RegExp(`${session.title}.*?(Excellent|Good|Satisfactory|Poor)`, "gi")) || [];
-        let counts = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
-        matches.forEach(m => {
-            if (/Excellent/i.test(m)) counts.Excellent++;
-            if (/Good/i.test(m)) counts.Good++;
-            if (/Satisfactory/i.test(m)) counts.Satisfactory++;
-            if (/Poor/i.test(m)) counts.Poor++;
-        });
+        const getCounts = (label) => {
+            const regex = new RegExp(`${session.title}.*?${label}:\\s*(Excellent|Good|Satisfactory|Poor)`, "gi");
+            const matches = data.match(regex) || [];
+            let c = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
+            matches.forEach(m => {
+                if (/Excellent/i.test(m)) c.Excellent++;
+                if (/Good/i.test(m)) c.Good++;
+                if (/Satisfactory/i.test(m)) c.Satisfactory++;
+                if (/Poor/i.test(m)) c.Poor++;
+            });
+            return c;
+        };
 
-        let comments = [];
-        const commRegex = new RegExp(`${session.title}.*?Comment:\\s*(.*?)(?=\\n|\\r|$)`, "gi");
-        let m; while ((m = commRegex.exec(data)) !== null) if(m[1].length > 2) comments.push(m[1]);
+        const contentCounts = getCounts("Presentation Content");
+        const deliveryCounts = getCounts("Presentation Delivery");
 
         const card = document.createElement('div');
         card.className = 'analysis-card';
         card.innerHTML = `
             <h4>${session.title}</h4>
-            <div class="chart-flex">
-                <canvas id="chart-${idx}" width="180" height="180"></canvas>
-                <div class="comments-preview">
-                    <h5>Comments:</h5>
-                    ${comments.map(c => `<div class="comm-item">"${c}"</div>`).join('') || '<p>None</p>'}
-                </div>
+            <div class="dual-chart-row">
+                <div class="chart-item"><canvas id="c-chart-${idx}" width="150" height="150"></canvas><p>Content</p></div>
+                <div class="chart-item"><canvas id="d-chart-${idx}" width="150" height="150"></canvas><p>Delivery</p></div>
+                <div class="comments-preview" id="comm-${idx}"><h5>Comments:</h5></div>
             </div>`;
         container.appendChild(card);
 
-        new Chart(document.getElementById(`chart-${idx}`), {
+        const createDoughnut = (id, counts) => new Chart(document.getElementById(id), {
             type: 'doughnut',
-            data: {
-                labels: Object.keys(counts),
-                datasets: [{
-                    data: Object.values(counts).some(v => v > 0) ? Object.values(counts) : [1,0,0,0],
-                    backgroundColor: ['#005eb8', '#41b6e6', '#002f5c', '#d93025']
-                }]
-            },
-            options: { responsive: false }
+            data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts).some(v=>v>0)?Object.values(counts):[1,0,0,0], backgroundColor: ['#005eb8', '#41b6e6', '#002f5c', '#d93025'] }] },
+            options: { responsive: false, plugins: { legend: { display: false } } }
         });
+
+        createDoughnut(`c-chart-${idx}`, contentCounts);
+        createDoughnut(`d-chart-${idx}`, deliveryCounts);
     });
 }
 
-// --- CERTIFICATE ENGINE ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
-    
     doc.setGState(new doc.GState({opacity: 0.08}));
     doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); 
     doc.setGState(new doc.GState({opacity: 1.0}));
-
     doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
     doc.addImage(MFT_LOGO, 'PNG', 680, 40, 120, 45);
-
     doc.setDrawColor(0, 94, 184); doc.setLineWidth(5); doc.rect(20, 20, 802, 555);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(28); doc.setTextColor(0, 51, 102);
+    doc.setFont("helvetica", "bold").setFontSize(28).setTextColor(0, 51, 102);
     doc.text("Critical Care ACE Day", 421, 100, {align:"center"});
-    
-    doc.setFontSize(22); doc.setTextColor(0);
+    doc.setFontSize(22).setTextColor(0);
     doc.text(isSpeaker ? "SPEAKER CERTIFICATE" : "CERTIFICATE OF ATTENDANCE", 421, 180, {align:"center"});
-    
-    doc.setFontSize(40); doc.setTextColor(0, 94, 184);
+    doc.setFontSize(40).setTextColor(0, 94, 184);
     doc.text(name, 421, 280, {align:"center"});
-
-    doc.setFontSize(16); doc.setTextColor(0); doc.setFont("helvetica", "normal");
+    doc.setFontSize(16).setTextColor(0).setFont("helvetica", "normal");
     const desc = isSpeaker ? `For delivering the presentation: "${detail}"` : "For attending the sessions held on:";
     doc.text(desc, 421, 330, {align:"center"});
-    doc.setFont("helvetica", "bold"); doc.text(eventDate, 421, 360, {align:"center"});
-
+    doc.setFont("helvetica", "bold").text(eventDate, 421, 360, {align:"center"});
     if(!isSpeaker) {
-        doc.setFontSize(10);
-        let y = 390;
+        doc.setFontSize(10); let y = 390;
         detail.forEach(t => { doc.text(`• ${t}`, 421, y, {align:"center"}); y+=18; });
     }
-
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
     doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
 }
