@@ -25,63 +25,82 @@
         </div>
         
         <div id="user-view">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="userName" placeholder="For your certificate..." required>
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="userEmail" placeholder="e.g. name@mft.nhs.uk" required>
-                </div>
+            <div id="form-closed-msg" style="display:none; text-align:center; padding:40px;">
+                <h3 style="color:#d93025;">Portal Currently Closed</h3>
+                <p>The feedback form is not accepting submissions at this time.</p>
             </div>
-
-            <div id="sessions-container"></div>
-
-            <div class="overall-feedback">
-                <label><strong>General Feedback on the Whole Day</strong></label>
-                <textarea id="generalFeedback" placeholder="What went well? Any suggestions for next time?"></textarea>
+            <div id="form-active-area">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="userName" placeholder="For your certificate..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="userEmail" placeholder="e.g. name@mft.nhs.uk" required>
+                    </div>
+                </div>
+                <div id="sessions-container"></div>
+                <div class="overall-feedback">
+                    <label><strong>General Feedback on the Whole Day</strong></label>
+                    <textarea id="generalFeedback" placeholder="What went well? Any suggestions for next time?"></textarea>
+                </div>
+                <button type="button" class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
             </div>
-
-            <button type="button" class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
                 <h3>Admin Dashboard</h3>
-                <button class="btn-danger" onclick="location.reload()">Logout</button>
+                <div class="admin-top-btns">
+                    <button class="btn-sync" onclick="syncToLive()">Update & Go Live</button>
+                    <button class="btn-danger" onclick="location.reload()">Logout</button>
+                </div>
             </div>
 
             <div class="admin-tabs">
-                <button class="tab-btn active" id="btn-tab-setup" onclick="showTab('setup')">Manage Agenda</button>
-                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Feedback Analysis</button>
+                <button class="tab-btn active" id="btn-tab-setup" onclick="showTab('setup')">Agenda & Status</button>
+                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
+                <button class="tab-btn" id="btn-tab-log" onclick="showTab('log')">Attendance Log</button>
             </div>
 
             <div id="tab-setup" class="tab-content">
+                <div class="control-box status-control">
+                    <label><strong>Form Status:</strong></label>
+                    <select id="form-status-toggle">
+                        <option value="open">Open (Accepting Submissions)</option>
+                        <option value="closed">Closed (Locked)</option>
+                    </select>
+                </div>
                 <div class="control-box">
                     <label>Event Date:</label>
-                    <input type="text" id="admin-date-input" onchange="updateGlobalDate(this.value)">
+                    <input type="text" id="admin-date-input">
                 </div>
                 <div id="admin-agenda-list"></div>
-                <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
+                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
 
             <div id="tab-analysis" class="tab-content" style="display:none;">
                 <div class="control-box">
-                    <h4>Live Data Importer</h4>
-                    <p>Upload the Web3Forms CSV export to generate dual-doughnut charts.</p>
                     <button class="btn-sec" onclick="document.getElementById('csv-file-input').click()">📁 Upload CSV File</button>
                     <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
-                    <textarea id="raw-data-input" placeholder="Or paste raw text here..." style="margin-top:10px; height:60px;"></textarea>
-                    <button class="btn-primary" style="width:auto; padding:10px 20px; margin-top:10px;" onclick="processImportedData()">Generate Analysis</button>
+                    <textarea id="raw-data-input" placeholder="Paste CSV text here..." style="margin-top:10px; height:60px;"></textarea>
+                    <button class="btn-primary" style="width:auto; padding:10px 20px; margin-top:10px;" onclick="processImportedData()">Run Analysis</button>
                 </div>
                 <div id="analysis-results"></div>
             </div>
+
+            <div id="tab-log" class="tab-content" style="display:none;">
+                <div class="control-box">
+                    <h4>Attendees Record</h4>
+                    <p>A copy of all generated attendance certificates is stored here.</p>
+                    <div id="attendance-log-list" class="log-container"></div>
+                    <button class="btn-danger" style="margin-top:10px; font-size:10px;" onclick="clearLog()">Clear History</button>
+                </div>
+            </div>
         </div>
 
-        <div class="footer-login">
-            <span onclick="checkAdmin()">Admin Login</span>
-        </div>
+        <div class="footer-login" onclick="checkAdmin()">Admin Login</div>
     </div>
 
     <script src="app.js"></script>
