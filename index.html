@@ -3,45 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Critical Care ACE Day Portal</title>
+    <title>ACE Day Portal & Admin</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
-    <div class="card">
+    <div class="card" id="main-card">
         <div class="header-section">
-            <div class="nhs-logo">NHS</div>
+            <div class="nhs-logo" onclick="checkAdmin()">NHS</div>
             <h2>Critical Care ACE Day</h2>
             <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
-            <p class="event-meta"><strong>28 April 2026</strong> | 13:30 – 16:15</p>
-            <p class="event-meta">NMGH & ORC | Coordinator: Mohamad Aly</p>
             <hr>
         </div>
         
-        <div class="form-row">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="userName" placeholder="Full name for certificate" required>
+        <div id="user-view">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="userName" placeholder="For certificate...">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="userEmail" placeholder="For records...">
+                </div>
             </div>
-            <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="userEmail" placeholder="To receive a record copy" required>
-            </div>
+
+            <div id="sessions-container"></div>
+            <div id="error-msg" class="error-banner">⚠️ Please complete feedback for attended sessions.</div>
+            <button type="button" class="btn-primary" id="submitBtn" onclick="startProcess()">Submit & Download Certificate</button>
         </div>
 
-        <h3 class="section-title">Session Feedback</h3>
-        <p class="instruction">Complete feedback for all attended sessions. Use 'Did not attend' for those missed.</p>
-        
-        <div id="sessions-container"></div>
-
-        <div id="error-msg" class="error-banner">
-            ⚠️ Validation Error: Please provide ratings and takeaways for all sessions you attended.
+        <div id="admin-view" style="display:none;">
+            <h3 class="admin-title">Coordinator Dashboard</h3>
+            <div class="admin-actions">
+                <button class="btn-sec" onclick="generateSpeakerCerts()">Generate All Speaker Certificates</button>
+                <button class="btn-sec" onclick="exportSessionConfig()">Export Agenda for Report</button>
+                <button class="btn-danger" onclick="location.reload()">Exit Admin Mode</button>
+            </div>
+            <div id="admin-agenda-list"></div>
         </div>
-
-        <button type="button" id="submitBtn" onclick="startProcess()">Submit Feedback & Download Certificate</button>
     </div>
 
-    <script src="app.js?v=400"></script>
+    <script src="app.js?v=500"></script>
 </body>
 </html>
