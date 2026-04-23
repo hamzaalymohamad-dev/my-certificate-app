@@ -4,7 +4,7 @@ const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview
 const MFT_LOGO = "https://i.postimg.cc/bN5B3YLk/mft.png";
 const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
-// Load data from "Live" storage
+// Core Data Management
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
     date: "28 April 2026",
@@ -14,7 +14,6 @@ let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     ]
 };
 
-// Temp workspace for Admin
 let adminWork = JSON.parse(JSON.stringify(liveData));
 
 window.onload = () => { 
@@ -23,9 +22,15 @@ window.onload = () => {
 
 function applyLiveUI() {
     document.getElementById('date-display').innerText = liveData.date;
+    const formArea = document.getElementById('form-active-area');
+    const closedMsg = document.getElementById('form-closed-msg');
+    
     if (liveData.status === "closed") {
-        document.getElementById('form-active-area').style.display = 'none';
-        document.getElementById('form-closed-msg').style.display = 'block';
+        formArea.style.display = 'none';
+        closedMsg.style.display = 'block';
+    } else {
+        formArea.style.display = 'block';
+        closedMsg.style.display = 'none';
     }
     renderUserForm(); 
 }
@@ -51,29 +56,29 @@ function renderUserForm() {
 
 function toggleS(id) { document.getElementById(`body-${id}`).classList.toggle('disabled', document.getElementById(`na-${id}`).checked); }
 
-// --- SUBMISSION ---
+// --- SUBMISSION & LOGGING ---
 async function startProcess() {
     const name = document.getElementById('userName').value;
     const email = document.getElementById('userEmail').value;
     const general = document.getElementById('generalFeedback').value;
 
-    if(!name || !email) return alert("Required fields missing.");
+    if(!name || !email) return alert("Please enter your name and email.");
     
     let attended = [];
-    let msg = `GENERAL: ${general}\n\n`;
+    let msg = `GENERAL FEEDBACK: ${general}\n\n`;
     liveData.agenda.forEach(item => {
         if(!document.getElementById(`na-${item.id}`).checked) {
             attended.push(item.title);
-            msg += `[${item.title}] Content: ${document.getElementById(`r1-${item.id}`).value}, Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
+            msg += `[${item.title}] Presentation Content: ${document.getElementById(`r1-${item.id}`).value}, Presentation Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
         }
     });
 
-    // Save to Attendance Log
+    // Save to Log
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = `<div class="thank-you-msg"><h2>✓ Submitted</h2><p>Your certificate is downloading.</p></div>`;
+    document.getElementById('user-view').innerHTML = `<div class="thank-you-msg"><h2>✓ Feedback Received</h2><p>Your certificate is downloading. Thank you for your participation.</p></div>`;
 
     await generateCert(name, attended, false);
     fetch("https://api.web3forms.com/submit", {
@@ -83,9 +88,9 @@ async function startProcess() {
     });
 }
 
-// --- ADMIN CORE ---
+// --- ADMIN FUNCTIONS ---
 function checkAdmin() {
-    if (prompt("Password:") === ADMIN_PASS) {
+    if (prompt("Admin Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         loadAdminWorkspace();
@@ -104,7 +109,8 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Changes are now Live!");
+    alert("System updated! Changes are now live for users.");
+    applyLiveUI();
 }
 
 function renderAdminAgenda() {
@@ -118,54 +124,91 @@ function renderAdminAgenda() {
                     <input type="text" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
                     <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
                 </div>
-                <input type="text" value="${item.speakers.join(',')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',')">
+                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speakers (comma separated)" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <div class="btn-row">
+                    ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Speaker Cert: ${s}</button>`).join('')}
+                </div>
             </div>`;
     });
 }
 
-function addSession() { adminWork.agenda.push({id: Date.now(), time:"00:00", title:"New", speakers:[]}); renderAdminAgenda(); }
+function addSession() { adminWork.agenda.push({id: Date.now(), time:"00:00", title:"New Presentation", speakers:[]}); renderAdminAgenda(); }
 
 function renderLog() {
     const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     const container = document.getElementById('attendance-log-list');
-    container.innerHTML = logs.reverse().map(l => `
+    container.innerHTML = logs.reverse().map((l, idx) => `
         <div class="log-entry">
-            <strong>${l.name}</strong> (${l.email})<br>
-            <small>${l.date}</small>
-            <button class="btn-mini" onclick="generateCert('${l.name}', ${JSON.stringify(l.sessions)}, false)">Regenerate PDF</button>
+            <div><strong>${l.name}</strong><br><small>${l.email} | ${l.date}</small></div>
+            <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - idx})">Regenerate PDF</button>
         </div>
     `).join('');
 }
-function clearLog() { if(confirm("Clear all attendance records?")) { localStorage.removeItem('ace_attendance_log'); renderLog(); }}
 
-// --- ANALYSIS FIX ---
+function regenerateFromLog(index) {
+    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    const record = logs[index];
+    if(record) generateCert(record.name, record.sessions, false);
+}
+
+function clearLog() { if(confirm("Permanently delete all attendance records?")) { localStorage.removeItem('ace_attendance_log'); renderLog(); }}
+
+// --- RESTORED ANALYSIS ---
+function handleFileUpload(event) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('raw-data-input').value = e.target.result;
+        processImportedData();
+    };
+    reader.readAsText(event.target.files[0]);
+}
+
 function processImportedData() {
     const raw = document.getElementById('raw-data-input').value;
     const container = document.getElementById('analysis-results');
     container.innerHTML = "";
 
     liveData.agenda.forEach((session, idx) => {
-        const getScores = (label) => {
-            const regex = new RegExp(`\\[${session.title}\\].*?${label}:\\s*(Excellent|Good|Satisfactory|Poor)`, "gi");
+        const getCounts = (typeLabel) => {
+            const regex = new RegExp(`\\[${session.title}\\].*?${typeLabel}:\\s*(Excellent|Good|Satisfactory|Poor)`, "gi");
             const matches = raw.match(regex) || [];
-            let c = {Excellent:0, Good:0, Satisfactory:0, Poor:0};
-            matches.forEach(m => { if(/Excellent/i.test(m)) c.Excellent++; if(/Good/i.test(m)) c.Good++; });
+            let c = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
+            matches.forEach(m => {
+                if (/Excellent/i.test(m)) c.Excellent++;
+                else if (/Good/i.test(m)) c.Good++;
+                else if (/Satisfactory/i.test(m)) c.Satisfactory++;
+                else if (/Poor/i.test(m)) c.Poor++;
+            });
             return c;
         };
 
+        const contentData = getCounts("Presentation Content");
+        const deliveryData = getCounts("Presentation Delivery");
+
+        // Extract Comments
         let comms = [];
         const cRegex = new RegExp(`\\[${session.title}\\].*?Comment:\\s*(.*?)(?=\\n|\\r|$)`, "gi");
-        let m; while((m = cRegex.exec(raw)) !== null) if(m[1].trim().length > 1) comms.push(m[1]);
+        let m; while((m = cRegex.exec(raw)) !== null) if(m[1].trim().length > 1) comms.push(m[1].trim());
 
         const card = document.createElement('div');
         card.className = 'analysis-card';
-        card.innerHTML = `<h4>${session.title}</h4><div class="dual-chart-row">
-            <canvas id="c-${idx}" width="120" height="120"></canvas>
-            <canvas id="d-${idx}" width="120" height="120"></canvas>
-            <div class="comments-preview"><b>Comments:</b><br>${comms.map(c=>`• ${c}`).join('<br>')}</div>
-        </div>`;
+        card.innerHTML = `
+            <h4>${session.title}</h4>
+            <div class="dual-chart-row">
+                <div class="chart-item"><canvas id="c-chart-${idx}" width="140" height="140"></canvas><p>Content</p></div>
+                <div class="chart-item"><canvas id="d-chart-${idx}" width="140" height="140"></canvas><p>Delivery</p></div>
+                <div class="comments-preview"><b>Comments:</b><br>${comms.map(c=>`• ${c}`).join('<br>') || 'No comments.'}</div>
+            </div>`;
         container.appendChild(card);
-        // ... (Charts generation code same as previous)
+
+        const buildChart = (id, c) => new Chart(document.getElementById(id), {
+            type: 'doughnut',
+            data: { labels: Object.keys(c), datasets: [{ data: Object.values(c).some(v=>v>0)?Object.values(c):[1,0,0,0], backgroundColor: ['#005eb8', '#41b6e6', '#002f5c', '#d93025'] }] },
+            options: { responsive: false, plugins: { legend: { display: false } } }
+        });
+
+        buildChart(`c-chart-${idx}`, contentData);
+        buildChart(`d-chart-${idx}`, deliveryData);
     });
 }
 
@@ -180,21 +223,29 @@ function showTab(t) {
 async function generateCert(name, sessions, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
+    
     doc.setGState(new doc.GState({opacity: 0.08}));
     doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); 
     doc.setGState(new doc.GState({opacity: 1.0}));
+
     doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
     doc.addImage(MFT_LOGO, 'PNG', 680, 40, 120, 45);
     doc.setDrawColor(0, 94, 184).setLineWidth(5).rect(20, 20, 802, 555);
+    
     doc.setFont("helvetica", "bold").setFontSize(28).setTextColor(0, 51, 102).text("Critical Care ACE Day", 421, 100, {align:"center"});
     doc.setFontSize(22).setTextColor(0).text(isSpeaker ? "SPEAKER CERTIFICATE" : "CERTIFICATE OF ATTENDANCE", 421, 180, {align:"center"});
     doc.setFontSize(40).setTextColor(0, 94, 184).text(name, 421, 280, {align:"center"});
-    doc.setFontSize(16).setTextColor(0).setFont("helvetica", "normal").text(isSpeaker ? `For delivering: "${sessions}"` : "For attending sessions on:", 421, 330, {align:"center"});
+    
+    doc.setFontSize(16).setTextColor(0).setFont("helvetica", "normal");
+    const desc = isSpeaker ? `For delivering the presentation: "${sessions}"` : "For attending the sessions held on:";
+    doc.text(desc, 421, 330, {align:"center"});
     doc.setFont("helvetica", "bold").text(liveData.date, 421, 360, {align:"center"});
+
     if(!isSpeaker && Array.isArray(sessions)) {
         doc.setFontSize(10); let y = 390;
         sessions.forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
     }
+    
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name}_Cert.pdf`);
+    doc.save(`${name.replace(/\s+/g, '_')}_Certificate.pdf`);
 }
