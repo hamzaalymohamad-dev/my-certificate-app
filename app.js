@@ -17,6 +17,74 @@ window.onload = () => {
     renderUserForm(); 
 };
 
+// --- DATA HANDLING ---
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('raw-data-input').value = e.target.result;
+        processImportedData();
+        alert("Data imported successfully!");
+    };
+    reader.readAsText(file);
+}
+
+function processImportedData() {
+    const data = document.getElementById('raw-data-input').value;
+    const container = document.getElementById('analysis-results');
+    container.innerHTML = "";
+
+    agenda.forEach((session, idx) => {
+        // Tally Ratings
+        const sessionBlock = new RegExp(`${session.title}.*?(Excellent|Good|Satisfactory|Poor)`, "gi");
+        const matches = data.match(sessionBlock) || [];
+        let counts = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
+        matches.forEach(m => {
+            if (/Excellent/i.test(m)) counts.Excellent++;
+            if (/Good/i.test(m)) counts.Good++;
+            if (/Satisfactory/i.test(m)) counts.Satisfactory++;
+            if (/Poor/i.test(m)) counts.Poor++;
+        });
+
+        // Pull Comments
+        let comments = [];
+        const commRegex = new RegExp(`${session.title}.*?Comment:\\s*(.*?)(?=\\n|\\r|$)`, "gi");
+        let match;
+        while ((match = commRegex.exec(data)) !== null) {
+            if (match[1] && match[1].trim().length > 2) comments.push(match[1].trim());
+        }
+
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `
+            <h4>${session.title}</h4>
+            <div class="chart-flex">
+                <canvas id="chart-${idx}" width="200" height="200"></canvas>
+                <div class="comments-preview">
+                    <h5>Comments (${comments.length}):</h5>
+                    <div class="comm-list">
+                        ${comments.map(c => `<div class="comm-item">"${c}"</div>`).join('') || '<p>No comments.</p>'}
+                    </div>
+                </div>
+            </div>`;
+        container.appendChild(card);
+
+        new Chart(document.getElementById(`chart-${idx}`), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts).some(v => v > 0) ? Object.values(counts) : [1,0,0,0],
+                    backgroundColor: ['#005eb8', '#41b6e6', '#002f5c', '#d93025']
+                }]
+            },
+            options: { responsive: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    });
+}
+
+// --- CORE APP LOGIC ---
 function renderUserForm() {
     const container = document.getElementById('sessions-container');
     container.innerHTML = "";
@@ -32,7 +100,7 @@ function renderUserForm() {
                         <select id="r1-${item.id}"><option value="">Content...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                         <select id="r2-${item.id}"><option value="">Delivery...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                     </div>
-                    <textarea id="comm-${item.id}" placeholder="Your comments..."></textarea>
+                    <textarea id="comm-${item.id}" placeholder="Takeaways for this session..."></textarea>
                 </div>
             </div>`;
     });
@@ -52,7 +120,7 @@ function showTab(tab) {
     document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`tab-${tab}`).style.display = 'block';
-    event.currentTarget.classList.add('active');
+    document.getElementById(`btn-tab-${tab}`).classList.add('active');
 }
 
 function renderAdminAgenda() {
@@ -66,9 +134,11 @@ function renderAdminAgenda() {
                     <input type="text" value="${item.title}" onchange="updateAgenda(${index}, 'title', this.value)">
                     <button class="btn-del" onclick="removeSession(${index})">×</button>
                 </div>
-                <input type="text" value="${item.speakers.join(', ')}" onchange="updateSpeakers(${index}, this.value)">
-                <div class="btn-row">
-                    ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Speaker Cert: ${s}</button>`).join('')}
+                <div class="speaker-edit-zone">
+                    <input type="text" value="${item.speakers.join(', ')}" onchange="updateSpeakers(${index}, this.value)">
+                    <div class="btn-row">
+                        ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Speaker Cert: ${s}</button>`).join('')}
+                    </div>
                 </div>
             </div>`;
     });
@@ -86,7 +156,7 @@ async function generateCert(name, detail, isSpeaker) {
     const doc = new jsPDF('l', 'pt', 'a4');
     
     doc.setGState(new doc.GState({opacity: 0.08}));
-    doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); 
+    doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); // FULL SCALE
     doc.setGState(new doc.GState({opacity: 1.0}));
 
     doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
@@ -109,65 +179,25 @@ async function generateCert(name, detail, isSpeaker) {
 
     if(!isSpeaker) {
         doc.setFontSize(10);
-        let y = 400;
-        detail.forEach(t => { doc.text(`• ${t}`, 421, y, {align:"center"}); y+=20; });
+        let y = 390;
+        detail.forEach(t => { doc.text(`• ${t}`, 421, y, {align:"center"}); y+=18; });
     }
 
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
     doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
 }
 
-function processImportedData() {
-    const data = document.getElementById('raw-data-input').value;
-    const container = document.getElementById('analysis-results');
-    container.innerHTML = "";
-
-    agenda.forEach((session, idx) => {
-        // Tally results (Basic text scanning logic)
-        const exc = (data.match(new RegExp(`Excellent`, "gi")) || []).length / (agenda.length * 2);
-        const gd = (data.match(new RegExp(`Good`, "gi")) || []).length / (agenda.length * 2);
-        const sat = (data.match(new RegExp(`Satisfactory`, "gi")) || []).length / (agenda.length * 2);
-
-        const card = document.createElement('div');
-        card.className = 'analysis-card';
-        card.innerHTML = `
-            <h4>${session.title}</h4>
-            <div class="chart-flex">
-                <canvas id="chart-${idx}" width="200" height="200"></canvas>
-                <div class="comments-preview">
-                    <h5>Feedback Comments:</h5>
-                    <div class="comm-list" id="comm-list-${idx}">
-                        <p style="font-style:italic;">Scanning input data for strings...</p>
-                    </div>
-                </div>
-            </div>`;
-        container.appendChild(card);
-
-        new Chart(document.getElementById(`chart-${idx}`), {
-            type: 'doughnut',
-            data: {
-                labels: ["Excellent", "Good", "Satisfactory"],
-                datasets: [{
-                    data: [exc || 1, gd || 0, sat || 0],
-                    backgroundColor: ['#005eb8', '#41b6e6', '#002f5c']
-                }]
-            },
-            options: { responsive: false }
-        });
-    });
-}
-
 async function startProcess() {
     const name = document.getElementById('userName').value;
     const email = document.getElementById('userEmail').value;
-    if(!name || !email) return alert("Please enter Name and Email");
+    if(!name || !email) return alert("Fill Name/Email");
 
     let attended = [];
     let msg = "";
     agenda.forEach(item => {
         if(!document.getElementById(`na-${item.id}`).checked) {
             attended.push(item.title);
-            msg += `[${item.title}] Content: ${document.getElementById(`r1-${item.id}`).value}, Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
+            msg += `[${item.title}] Rating: ${document.getElementById(`r1-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
         }
     });
 
@@ -177,5 +207,5 @@ async function startProcess() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg })
-    }).then(() => { alert("Feedback Sent Successfully!"); location.reload(); });
+    }).then(() => { alert("Done!"); location.reload(); });
 }
