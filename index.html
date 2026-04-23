@@ -14,14 +14,13 @@
             <h2>Critical Care ACE Day</h2>
             <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
             <p class="event-meta"><strong>28 April 2026</strong> | 13:30 – 16:15</p>
-            <p class="event-meta">Coordinator: Mohamad Aly</p>
+            <hr>
         </div>
-        <hr>
         
         <div class="form-row">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" id="userName" placeholder="Name for certificate" required>
+                <input type="text" id="userName" placeholder="For certificate..." required>
             </div>
             <div class="form-group">
                 <label>Email Address</label>
@@ -30,17 +29,15 @@
         </div>
 
         <h3 class="section-title">Session Feedback</h3>
-        <p class="instruction">Complete feedback for attended sessions. Use 'Did not attend' for others.</p>
-
         <div id="sessions-container"></div>
 
         <div id="error-msg" class="error-banner">
-            ⚠️ Please provide feedback or check "Did not attend" for ALL sessions.
+            ⚠️ Please provide feedback for all attended sessions.
         </div>
 
-        <button type="button" id="submitBtn" onclick="startProcess()">Submit Feedback & Download Certificate</button>
+        <button type="button" id="submitBtn" onclick="startProcess()">Submit & Download Certificate</button>
     </div>
 
-    <script src="app.js?v=210"></script>
+    <script src="app.js?v=215"></script>
 </body>
 </html>
