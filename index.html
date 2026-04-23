@@ -6,7 +6,6 @@
     <title>Critical Care ACE Day Portal</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -26,15 +25,14 @@
             </div>
             <div class="form-group">
                 <label>Email Address</label>
-                <input type="email" id="userEmail" placeholder="To receive records" required>
+                <input type="email" id="userEmail" placeholder="For records..." required>
             </div>
         </div>
 
         <h3 class="section-title">Session Feedback</h3>
-        <p class="instruction">Please complete feedback for sessions attended. Use 'Did not attend' for others.</p>
+        <p class="instruction">Complete feedback for attended sessions. Use 'Did not attend' for others.</p>
 
-        <div id="sessions-container">
-            </div>
+        <div id="sessions-container"></div>
 
         <div id="error-msg" class="error-banner">
             ⚠️ Please provide feedback or check "Did not attend" for ALL sessions.
@@ -43,6 +41,6 @@
         <button type="button" id="submitBtn" onclick="startProcess()">Submit Feedback & Download Certificate</button>
     </div>
 
-    <script src="app.js?v=125"></script>
+    <script src="app.js?v=210"></script>
 </body>
 </html>
