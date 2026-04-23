@@ -9,13 +9,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="watermark-bg"></div>
 
-    <div class="card" id="main-container">
+    <div class="card">
         <div class="header-section">
-            <div class="nhs-logo" onclick="checkAdmin()">NHS</div>
+            <div class="logo-row">
+                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo" alt="MFT Logo">
+                <div class="nhs-logo-text" onclick="checkAdmin()">NHS</div>
+                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo" alt="Critical Care Logo">
+            </div>
             <h2>Critical Care ACE Day</h2>
             <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
             <p class="lead-text">Clinical Audit Lead: Mohamad Aly</p>
+            <p class="event-date-display" id="date-display">28 April 2026</p>
             <hr>
         </div>
         
@@ -23,29 +29,26 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" id="userName" placeholder="For your certificate..." required>
+                    <input type="text" id="userName" placeholder="For your certificate...">
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" id="userEmail" placeholder="For our records..." required>
+                    <input type="email" id="userEmail" placeholder="For our records...">
                 </div>
             </div>
-
             <div id="sessions-container"></div>
-
-            <div id="error-msg" class="error-banner">
-                ⚠️ Please provide feedback for all sessions you attended.
-            </div>
-
-            <button type="button" class="btn-primary" id="submitBtn" onclick="startProcess()">
-                Submit Feedback & Download Certificate
-            </button>
+            <button type="button" class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-nav">
                 <h3>Clinical Audit Lead Dashboard</h3>
                 <button class="btn-danger" onclick="location.reload()">Exit Admin</button>
+            </div>
+            
+            <div class="admin-date-config">
+                <label>Set Event Date:</label>
+                <input type="text" id="admin-date-input" onchange="updateGlobalDate(this.value)">
             </div>
 
             <div class="admin-tabs">
@@ -54,19 +57,16 @@
             </div>
 
             <div id="tab-manage" class="tab-content">
-                <div class="admin-tools">
-                    <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
-                </div>
+                <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
                 <div id="admin-agenda-list"></div>
             </div>
 
             <div id="tab-analysis" class="tab-content" style="display:none;">
-                <p class="info-text">Visual performance metrics for each session based on feedback data.</p>
                 <div id="charts-container" class="charts-grid"></div>
             </div>
         </div>
     </div>
 
-    <script src="app.js?v=700"></script>
+    <script src="app.js?v=800"></script>
 </body>
 </html>
