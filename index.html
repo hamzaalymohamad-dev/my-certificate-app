@@ -13,7 +13,7 @@
     <div class="card">
         <div class="header-section">
             <h2>Critical Care ACE Day</h2>
-            <p>Audit & Clinical Effectiveness Collaborative</p>
+            <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
             <p class="event-meta"><strong>28 April 2026</strong> | 13:30 – 16:15</p>
             <p class="event-meta">Coordinator: Mohamad Aly</p>
         </div>
@@ -22,7 +22,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" id="userName" placeholder="Name for certificates" required>
+                <input type="text" id="userName" placeholder="Name for certificate" required>
             </div>
             <div class="form-group">
                 <label>Email Address</label>
@@ -31,18 +31,18 @@
         </div>
 
         <h3 class="section-title">Session Feedback</h3>
-        <p class="instruction">Please complete all sections. Use 'Did not attend' if you missed a session.</p>
+        <p class="instruction">Please complete feedback for sessions attended. Use 'Did not attend' for others.</p>
 
         <div id="sessions-container">
             </div>
 
         <div id="error-msg" class="error-banner">
-            ⚠️ Please provide feedback or check "Did not attend" for all sessions.
+            ⚠️ Please provide feedback or check "Did not attend" for ALL sessions.
         </div>
 
-        <button type="button" id="submitBtn" onclick="startProcess()">Submit All & Download Certificates</button>
+        <button type="button" id="submitBtn" onclick="startProcess()">Submit Feedback & Download Certificate</button>
     </div>
 
-    <script src="app.js?v=115"></script>
+    <script src="app.js?v=125"></script>
 </body>
 </html>
