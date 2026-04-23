@@ -1,5 +1,5 @@
-// 1. Tell the app who you are (Replace 'YOUR_PUBLIC_KEY' with yours)
-emailjs.init(N9nzTwaMwjXe8rVEv);
+// 1. Tell the app who you are (IDs MUST be in "quotation marks")
+emailjs.init("N9nzTwaMwjXe8rVEv");
 
 // 2. This function starts when the user clicks the button
 async function startProcess() {
@@ -16,11 +16,10 @@ async function startProcess() {
 
     alert("Working on your certificate... please wait.");
 
-    // 3. This part "draws" the certificate (we use a library called jsPDF)
+    // 3. This part "draws" the certificate
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'pt', 'a4'); // 'l' means landscape (wide)
+    const doc = new jsPDF('l', 'pt', 'a4'); 
 
-    // Let's add some text to the PDF
     doc.setFontSize(30);
     doc.text("Certificate of Attendance", 420, 150, { align: "center" });
     doc.setFontSize(20);
@@ -28,19 +27,18 @@ async function startProcess() {
     doc.text(name, 420, 280, { align: "center" });
     doc.text("For the session: " + topic, 420, 350, { align: "center" });
 
-    // Convert the PDF into a special code (Base64) so it can be emailed
     const pdfData = doc.output('datauristring');
 
-    // 4. Tell the "Delivery Driver" (EmailJS) to go!
+    // 4. Send the data to EmailJS
     const emailData = {
         user_name: name,
         user_email: email,
         topic: topic,
-        content: pdfData // This is our PDF
+        content: pdfData 
     };
 
-    // Replace 'YOUR_SERVICE_ID' and 'YOUR_TEMPLATE_ID' with yours
-    emailjs.send(service_cw255i8, template_5ohdsal, emailData)
+    // Note: service and template IDs also need "quotes"
+    emailjs.send("service_cw255i8", "template_5ohdsal", emailData)
         .then(() => {
             alert("Success! Your certificate is in your email.");
         })
