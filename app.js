@@ -1,24 +1,22 @@
+// Initialize EmailJS with your Public Key
 emailjs.init("N9nzTwaMwjXe8rVEv");
 
 const agenda = [
-    { id: 1, time: "13:30", title: "ICU Echo Audit", speaker: "Steve Benington, Suraj, Vikas & Hussein" },
-    { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speaker: "Anna Tilley" },
-    { id: 3, time: "14:35", title: "Critical Care Updates", speaker: "Evangelos Boultoukas" },
-    { id: 4, time: "15:05", title: "Critical Care Ethics", speaker: "Bernard Foex" },
-    { id: 5, time: "15:45", title: "PICC Line Service at ORC", speaker: "Ruth Wynn" }
+    { id: 1, time: "13:30", title: "ICU Echo Audit" },
+    { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit" },
+    { id: 3, time: "14:35", title: "Critical Care Updates" },
+    { id: 4, time: "15:05", title: "Critical Care Ethics" },
+    { id: 5, time: "15:45", title: "PICC Line Service at ORC" }
 ];
 
-// 1. Generate Form Items
+// Build the form dynamically
 window.onload = () => {
     const container = document.getElementById('sessions-container');
     agenda.forEach(item => {
         container.innerHTML += `
             <div class="session-card" id="card-${item.id}">
                 <div class="session-header">
-                    <div>
-                        <span class="time-tag">${item.time}</span>
-                        <strong>${item.title}</strong>
-                    </div>
+                    <div><strong>${item.time} - ${item.title}</strong></div>
                     <label class="na-check">
                         <input type="checkbox" onchange="toggleSession(${item.id})" id="na-${item.id}"> Did not attend
                     </label>
@@ -34,7 +32,7 @@ window.onload = () => {
                             <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
                         </select>
                     </div>
-                    <textarea id="comment-${item.id}" placeholder="Impact on your practice / Takeaway..."></textarea>
+                    <textarea id="comment-${item.id}" placeholder="Impact on practice / Key takeaway..."></textarea>
                 </div>
             </div>
         `;
@@ -52,35 +50,36 @@ async function startProcess() {
     const email = document.getElementById('userEmail').value;
     const errorBanner = document.getElementById('error-msg');
     
-    let submissionData = [];
-    let isFormComplete = true;
+    let attendedSessions = [];
+    let allSessionsValidated = true;
+    let emailFeedback = "";
 
     if (!name || !email) {
-        alert("Please provide your name and email.");
+        alert("Please enter your name and email.");
         return;
     }
 
-    // 2. Validate Every Session
+    // Validate every session on the agenda
     agenda.forEach(item => {
         const isNA = document.getElementById(`na-${item.id}`).checked;
-        const r1 = document.getElementById(`rating-content-${item.id}`).value;
-        const r2 = document.getElementById(`rating-delivery-${item.id}`).value;
-        const comm = document.getElementById(`comment-${item.id}`).value;
+        const rContent = document.getElementById(`rating-content-${item.id}`).value;
+        const rDelivery = document.getElementById(`rating-delivery-${item.id}`).value;
+        const comment = document.getElementById(`comment-${item.id}`).value;
 
-        if (!isNA && (!r1 || !r2 || !comm)) {
-            isFormComplete = false;
+        if (!isNA) {
+            // If they attended, all fields are mandatory
+            if (!rContent || !rDelivery || !comment) {
+                allSessionsValidated = false;
+            } else {
+                attendedSessions.push(item.title);
+                emailFeedback += `${item.title}:\n- Content: ${rContent}\n- Delivery: ${rDelivery}\n- Comment: ${comment}\n\n`;
+            }
+        } else {
+            emailFeedback += `${item.title}: DID NOT ATTEND\n\n`;
         }
-
-        submissionData.push({
-            title: item.title,
-            speaker: item.speaker,
-            attended: !isNA,
-            ratings: `${r1}/${r2}`,
-            comment: comm
-        });
     });
 
-    if (!isFormComplete) {
+    if (!allSessionsValidated) {
         errorBanner.style.display = "block";
         window.scrollTo(0, document.body.scrollHeight);
         return;
@@ -88,62 +87,67 @@ async function startProcess() {
     
     errorBanner.style.display = "none";
 
-    // 3. Generate Multi-Page PDF
+    // --- PDF GENERATION (Single Page Portrait) ---
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'pt', 'a4');
-    let attendCount = 0;
+    const doc = new jsPDF('p', 'pt', 'a4');
 
-    submissionData.filter(d => d.attended).forEach((data, index) => {
-        if (index > 0) doc.addPage();
-        attendCount++;
-        
-        // Design Styles
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(24);
-        doc.setTextColor(0, 51, 102);
-        doc.text("Critical Care ACE Day", 420, 80, { align: "center" });
-        
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(100);
-        doc.text("Audit & Clinical Effectiveness Collaborative", 420, 105, { align: "center" });
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(0, 51, 102);
+    doc.text("Critical Care ACE Day", 297, 80, { align: "center" });
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    doc.text("Audit & Clinical Effectiveness Collaborative — NMGH & ORC", 297, 100, { align: "center" });
 
-        doc.setTextColor(0);
-        doc.setFontSize(20);
-        doc.text("Certificate of Attendance", 420, 200, { align: "center" });
-        
-        doc.setFontSize(30);
-        doc.setTextColor(0, 94, 184);
-        doc.text(name, 420, 250, { align: "center" });
+    // Certificate Body
+    doc.setTextColor(0);
+    doc.setFontSize(18);
+    doc.text("Certificate of Attendance", 297, 180, { align: "center" });
+    
+    doc.setFontSize(14);
+    doc.text("This is to certify that", 297, 210, { align: "center" });
 
-        doc.setTextColor(0);
-        doc.setFontSize(16);
-        doc.text(`For attending the session:`, 420, 310, { align: "center" });
-        doc.setFontSize(18);
-        doc.setFont("helvetica", "bold");
-        doc.text(data.title, 420, 340, { align: "center" });
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "italic");
-        doc.text(`Presented by: ${data.speaker}`, 420, 365, { align: "center" });
+    doc.setFontSize(28);
+    doc.setTextColor(0, 94, 184); // NHS Blue
+    doc.text(name, 297, 260, { align: "center" });
 
-        doc.setFont("helvetica", "normal");
-        doc.text("Date: 28 April 2026 | Coordinator: Mohamad Aly", 420, 500, { align: "center" });
-    });
+    doc.setTextColor(0);
+    doc.setFontSize(14);
+    doc.text("Has attended the following clinical sessions:", 297, 320, { align: "center" });
+    
+    // List attended sessions
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    let yPos = 350;
+    
+    if (attendedSessions.length === 0) {
+        doc.text("General Attendance (No specific sessions logged)", 297, 350, { align: "center" });
+    } else {
+        attendedSessions.forEach(title => {
+            doc.text(`• ${title}`, 297, yPos, { align: "center" });
+            yPos += 20;
+        });
+    }
 
-    if (attendCount > 0) doc.save(`${name.replace(/\s+/g, '_')}_Certificates.pdf`);
+    // Footer & Signature
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text("Date: 28 April 2026", 100, 720);
+    doc.text("Coordinator: Mohamad Aly", 495, 720, { align: "right" });
+    doc.line(395, 710, 495, 710); // Signature line
 
-    // 4. Send Email Summary to EmailJS
-    const emailSummary = submissionData.map(d => 
-        `${d.title}: ${d.attended ? 'Attended (' + d.ratings + ') - ' + d.comment : 'Did Not Attend'}`
-    ).join("\n\n");
+    doc.save(`${name.replace(/\s+/g, '_')}_ACE_Certificate.pdf`);
 
+    // --- EMAIL NOTIFICATION ---
     emailjs.send("service_cw255i8", "template_5ohdsal", {
         user_name: name,
         user_email: email,
-        feedback_text: emailSummary
+        feedback_text: emailFeedback
     }).then(() => {
-        alert("Submission Successful! Your certificates have been generated.");
-        location.reload(); 
+        alert("Success! Your feedback has been sent and your certificate is downloading.");
+        location.reload();
     });
 }
