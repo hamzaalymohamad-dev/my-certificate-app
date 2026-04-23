@@ -46,3 +46,14 @@ button {
 }
 
 button:hover { background-color: #003d80; }
+.rating-box {
+    background: #f0f4f8;
+    padding: 10px;
+    border-radius: 8px;
+    border-left: 4px solid #0056b3;
+}
+label {
+    font-size: 0.9em;
+    color: #444;
+    margin-bottom: 5px;
+}
