@@ -43,13 +43,12 @@
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
                 <h3>Clinical Audit Lead Dashboard</h3>
-                <button class="btn-danger" onclick="location.reload()">Close Admin</button>
+                <button class="btn-danger" onclick="location.reload()">Exit Admin</button>
             </div>
 
             <div class="admin-tabs">
                 <button class="tab-btn active" onclick="showTab('setup')">1. Setup Agenda</button>
-                <button class="tab-btn" onclick="showTab('style')">2. Rating Style</button>
-                <button class="tab-btn" onclick="showTab('analysis')">3. Results & Analysis</button>
+                <button class="tab-btn" onclick="showTab('analysis')">2. Live Feedback Analysis</button>
             </div>
 
             <div id="tab-setup" class="tab-content">
@@ -61,28 +60,17 @@
                 <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
             </div>
 
-            <div id="tab-style" class="tab-content" style="display:none;">
-                <div class="control-box">
-                    <h4>Customize Rating Options</h4>
-                    <p>Select the type of feedback you want users to provide:</p>
-                    <select id="rating-type-select" onchange="updateRatingType(this.value)">
-                        <option value="standard">Standard (Excellent, Good, Satisfactory, Poor)</option>
-                        <option value="survey">Survey (Always, Sometimes, Never)</option>
-                        <option value="numeric">Numeric Score (1 to 5)</option>
-                    </select>
-                </div>
-            </div>
-
             <div id="tab-analysis" class="tab-content" style="display:none;">
                 <div class="control-box">
-                    <h4>Feedback Data Entry</h4>
-                    <p>Manually tally the Excellent/Good/Poor responses from your emails here to generate charts.</p>
+                    <h4>Automated Live Analysis</h4>
+                    <button class="btn-primary" style="width:auto; padding:10px 20px;" onclick="fetchLiveFeedback()">Refresh Live Data</button>
+                    <p id="sync-status" style="font-size:12px; margin-top:5px; color:#666;">Ready to sync with Web3Forms...</p>
                 </div>
                 <div id="analysis-results"></div>
             </div>
         </div>
     </div>
 
-    <script src="app.js?v=900"></script>
+    <script src="app.js?v=1000"></script>
 </body>
 </html>
