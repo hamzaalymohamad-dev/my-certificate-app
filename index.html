@@ -1,55 +1,79 @@
-<div class="card">
-    <h2>Critical Care ACE Day</h2>
-    <p><strong>Date:</strong> 28 April 2026 | <strong>Time:</strong> 13:30 – 16:15</p>
-    <p>Coordinator: Mohamad Aly</p>
-    <hr>
-    
-    <div class="form-group">
-        <input type="text" id="userName" placeholder="Full Name (for certificate)" required>
-        <input type="email" id="userEmail" placeholder="Email Address" required>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critical Care ACE Day Feedback</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Critical Care ACE Day</h2>
+        <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
+        <p class="info"><strong>Date:</strong> 28 April 2026 | <strong>Time:</strong> 13:30 – 16:15</p>
+        <p class="info"><strong>Coordinator:</strong> Mohamad Aly</p>
+        <hr>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="userName" placeholder="For certificate..." required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="userEmail" placeholder="To receive confirmation..." required>
+            </div>
+        </div>
+
+        <div class="form-group rating-box">
+            <label for="topic">Session Attended:</label>
+            <select id="topic">
+                <option value="">-- Choose Session --</option>
+                <option value="NA">NA - Did not attend a session</option>
+                <option value="ICU Echo Audit" data-presenter="Steve Benington, Suraj, Vikas & Hussein">13:30 ICU Echo Audit</option>
+                <option value="Vancomycin Infusions Re-Audit" data-presenter="Anna Tilley">14:15 Vancomycin Infusions Re-Audit</option>
+                <option value="Critical Care Updates" data-presenter="Evangelos Boultoukas">14:35 Critical Care Updates</option>
+                <option value="Critical Care Ethics" data-presenter="Bernard Foex">15:05 Critical Care Ethics</option>
+                <option value="PICC Line Service at ORC" data-presenter="Ruth Wynn">15:45 PICC Line Service at ORC</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group rating-box">
+                <label>Quality of Content</label>
+                <select id="ratingPresentation">
+                    <option value="">-- Rate --</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Satisfactory">Satisfactory</option>
+                    <option value="Poor">Poor</option>
+                    <option value="NA">NA</option>
+                </select>
+            </div>
+            <div class="form-group rating-box">
+                <label>Quality of Delivery</label>
+                <select id="ratingDelivery">
+                    <option value="">-- Rate --</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Satisfactory">Satisfactory</option>
+                    <option value="Poor">Poor</option>
+                    <option value="NA">NA</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Key Takeaway / Impact on Practice</label>
+            <textarea id="feedback" placeholder="Mandatory feedback..." rows="3"></textarea>
+        </div>
+
+        <button type="button" onclick="startProcess()">Submit Feedback & Get Certificate</button>
     </div>
 
-    <div class="form-group">
-        <label for="topic">Select Session (or 'NA' if not attended):</label>
-        <select id="topic">
-            <option value="">-- Choose Session --</option>
-            <option value="NA">NA - Did not attend any session</option>
-            <option value="ICU Echo Audit" data-presenter="Steve Benington, Suraj, Vikas & Hussein">13:30 ICU Echo Audit</option>
-            <option value="Vancomycin Infusions Re-Audit" data-presenter="Anna Tilley">14:15 Vancomycin Infusions Re-Audit</option>
-            <option value="Critical Care Updates" data-presenter="Evangelos Boultoukas">14:35 Critical Care Updates</option>
-            <option value="Critical Care Ethics" data-presenter="Bernard Foex">15:05 Critical Care Ethics</option>
-            <option value="PICC Line Service at ORC" data-presenter="Ruth Wynn">15:45 PICC Line Service at ORC</option>
-        </select>
-    </div>
-
-    <div class="form-group rating-box">
-        <label>Quality of Presentation (Content):</label>
-        <select id="ratingPresentation">
-            <option value="">-- Rate --</option>
-            <option value="Excellent">Excellent</option>
-            <option value="Good">Good</option>
-            <option value="Satisfactory">Satisfactory</option>
-            <option value="Poor">Poor</option>
-            <option value="NA">NA</option>
-        </select>
-    </div>
-
-    <div class="form-group rating-box">
-        <label>Quality of Delivery (Speaker):</label>
-        <select id="ratingDelivery">
-            <option value="">-- Rate --</option>
-            <option value="Excellent">Excellent</option>
-            <option value="Good">Good</option>
-            <option value="Satisfactory">Satisfactory</option>
-            <option value="Poor">Poor</option>
-            <option value="NA">NA</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="feedback">Key Takeaway/Impact on Practice:</label>
-        <textarea id="feedback" placeholder="Your feedback..." rows="3"></textarea>
-    </div>
-
-    <button type="button" onclick="startProcess()">Submit Feedback & Get Certificate</button>
-</div>
+    <script src="app.js?v=105"></script>
+</body>
+</html>
