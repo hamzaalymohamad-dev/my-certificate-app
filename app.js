@@ -40,7 +40,7 @@ async function startProcess() {
     };
 
     // Replace 'YOUR_SERVICE_ID' and 'YOUR_TEMPLATE_ID' with yours
-    emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailData)
+    emailjs.send(service_cw255i8, template_5ohdsal, emailData)
         .then(() => {
             alert("Success! Your certificate is in your email.");
         })
