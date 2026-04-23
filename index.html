@@ -14,9 +14,9 @@
     <div class="card">
         <div class="header-section">
             <div class="logo-row">
-                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo" alt="MFT Logo">
-                <div class="nhs-logo-text" onclick="checkAdmin()">NHS</div>
                 <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo" alt="Critical Care Logo">
+                <div class="nhs-logo-text" onclick="checkAdmin()">NHS</div>
+                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo" alt="MFT Logo">
             </div>
             <h2>Critical Care ACE Day</h2>
             <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
@@ -29,11 +29,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" id="userName" placeholder="For your certificate...">
+                    <input type="text" id="userName" placeholder="Name for certificate...">
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" id="userEmail" placeholder="For our records...">
+                    <input type="email" id="userEmail" placeholder="For records...">
                 </div>
             </div>
             <div id="sessions-container"></div>
@@ -41,32 +41,48 @@
         </div>
 
         <div id="admin-view" style="display:none;">
-            <div class="admin-nav">
+            <div class="admin-header-bar">
                 <h3>Clinical Audit Lead Dashboard</h3>
-                <button class="btn-danger" onclick="location.reload()">Exit Admin</button>
-            </div>
-            
-            <div class="admin-date-config">
-                <label>Set Event Date:</label>
-                <input type="text" id="admin-date-input" onchange="updateGlobalDate(this.value)">
+                <button class="btn-danger" onclick="location.reload()">Close Admin</button>
             </div>
 
             <div class="admin-tabs">
-                <button class="tab-btn active" id="tab-btn-manage" onclick="showTab('manage')">Manage Agenda</button>
-                <button class="tab-btn" id="tab-btn-analysis" onclick="showTab('analysis')">Feedback Analysis</button>
+                <button class="tab-btn active" onclick="showTab('setup')">1. Setup Agenda</button>
+                <button class="tab-btn" onclick="showTab('style')">2. Rating Style</button>
+                <button class="tab-btn" onclick="showTab('analysis')">3. Results & Analysis</button>
             </div>
 
-            <div id="tab-manage" class="tab-content">
+            <div id="tab-setup" class="tab-content">
+                <div class="control-box">
+                    <label>Global Event Date:</label>
+                    <input type="text" id="admin-date-input" onchange="updateGlobalDate(this.value)">
+                </div>
+                <div id="admin-agenda-list" class="admin-list"></div>
                 <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
-                <div id="admin-agenda-list"></div>
+            </div>
+
+            <div id="tab-style" class="tab-content" style="display:none;">
+                <div class="control-box">
+                    <h4>Customize Rating Options</h4>
+                    <p>Select the type of feedback you want users to provide:</p>
+                    <select id="rating-type-select" onchange="updateRatingType(this.value)">
+                        <option value="standard">Standard (Excellent, Good, Satisfactory, Poor)</option>
+                        <option value="survey">Survey (Always, Sometimes, Never)</option>
+                        <option value="numeric">Numeric Score (1 to 5)</option>
+                    </select>
+                </div>
             </div>
 
             <div id="tab-analysis" class="tab-content" style="display:none;">
-                <div id="charts-container" class="charts-grid"></div>
+                <div class="control-box">
+                    <h4>Feedback Data Entry</h4>
+                    <p>Manually tally the Excellent/Good/Poor responses from your emails here to generate charts.</p>
+                </div>
+                <div id="analysis-results"></div>
             </div>
         </div>
     </div>
 
-    <script src="app.js?v=800"></script>
+    <script src="app.js?v=900"></script>
 </body>
 </html>
