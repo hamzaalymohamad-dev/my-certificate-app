@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACE Day Portal | Clinical Audit Lead</title>
+    <title>Critical Care ACE Day Portal</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,17 +11,16 @@
 <body>
     <div class="watermark-bg"></div>
 
-    <div class="card">
+    <div class="card" id="main-container">
         <div class="header-section">
             <div class="logo-row">
                 <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo" alt="Critical Care Logo">
-                <div class="nhs-logo-text" onclick="checkAdmin()">NHS</div>
                 <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo" alt="MFT Logo">
             </div>
             <h2>Critical Care ACE Day</h2>
             <p class="subtitle">Audit & Clinical Effectiveness Collaborative</p>
             <p class="lead-text">Clinical Audit Lead: Mohamad Aly</p>
-            <p class="event-date-display" id="date-display">Loading Date...</p>
+            <p class="event-date-display" id="date-display"></p>
             <hr>
         </div>
         
@@ -33,51 +32,51 @@
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" id="userEmail" placeholder="For our records..." required>
+                    <input type="email" id="userEmail" placeholder="Example: name@mft.nhs.uk" required>
                 </div>
             </div>
+
             <div id="sessions-container"></div>
-            <button type="button" class="btn-primary" onclick="startProcess()">Submit Feedback & Download Certificate</button>
+
+            <div class="overall-feedback">
+                <label><strong>General Feedback on the Whole Day</strong></label>
+                <textarea id="generalFeedback" placeholder="What went well? What could be improved?"></textarea>
+            </div>
+
+            <button type="button" class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
-                <h3>Clinical Audit Lead Dashboard</h3>
-                <button class="btn-danger" onclick="location.reload()">Exit Admin</button>
+                <h3>Admin Dashboard</h3>
+                <button class="btn-danger" onclick="location.reload()">Logout</button>
             </div>
-
             <div class="admin-tabs">
-                <button class="tab-btn active" id="btn-tab-setup" onclick="showTab('setup')">1. Manage Agenda</button>
-                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">2. Live Feedback Analysis</button>
+                <button class="tab-btn active" id="btn-tab-setup" onclick="showTab('setup')">Agenda</button>
+                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
             </div>
-
             <div id="tab-setup" class="tab-content">
                 <div class="control-box">
-                    <label>Global Event Date:</label>
+                    <label>Event Date:</label>
                     <input type="text" id="admin-date-input" onchange="updateGlobalDate(this.value)">
                 </div>
-                <div id="admin-agenda-list" class="admin-list"></div>
-                <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
+                <div id="admin-agenda-list"></div>
+                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
-
             <div id="tab-analysis" class="tab-content" style="display:none;">
                 <div class="control-box">
-                    <h4>Live Data Importer</h4>
-                    <p>Upload your Web3Forms CSV export to automatically generate charts and pull comments.</p>
-                    
-                    <div class="import-actions">
-                        <button class="btn-sec" onclick="document.getElementById('csv-file-input').click()">📁 Upload CSV File</button>
-                        <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
-                    </div>
-
-                    <textarea id="raw-data-input" placeholder="Or paste raw text data here..." style="margin-top:10px; height:60px;"></textarea>
-                    <button class="btn-primary" style="width:auto; padding:10px 20px; margin-top:10px;" onclick="processImportedData()">Generate Analysis</button>
+                    <button class="btn-sec" onclick="document.getElementById('csv-file-input').click()">📁 Upload CSV</button>
+                    <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
                 </div>
                 <div id="analysis-results"></div>
             </div>
         </div>
+
+        <div class="footer-login">
+            <span onclick="checkAdmin()">Admin Login</span>
+        </div>
     </div>
 
-    <script src="app.js?v=1200"></script>
+    <script src="app.js?v=1300"></script>
 </body>
 </html>
