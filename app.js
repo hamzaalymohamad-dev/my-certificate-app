@@ -1,5 +1,5 @@
 // 1. Tell the app who you are (Replace 'YOUR_PUBLIC_KEY' with yours)
-emailjs.init("YOUR_PUBLIC_KEY");
+emailjs.init(N9nzTwaMwjXe8rVEv);
 
 // 2. This function starts when the user clicks the button
 async function startProcess() {
