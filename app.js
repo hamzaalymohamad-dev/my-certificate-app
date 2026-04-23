@@ -16,6 +16,7 @@ window.onload = () => {
     renderUserForm(); 
 };
 
+// --- USER FORM FUNCTIONS ---
 function renderUserForm() {
     const container = document.getElementById('sessions-container');
     container.innerHTML = "";
@@ -28,17 +29,17 @@ function renderUserForm() {
                 </div>
                 <div class="session-body" id="body-${item.id}">
                     <div class="rating-grid">
-                        <select id="r1-${item.id}"><option value="">Content...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
-                        <select id="r2-${item.id}"><option value="">Delivery...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
+                        <select id="r1-${item.id}"><option value="">Content Rating...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
+                        <select id="r2-${item.id}"><option value="">Delivery Rating...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                     </div>
-                    <textarea id="comm-${item.id}" placeholder="Comments..."></textarea>
+                    <textarea id="comm-${item.id}" placeholder="Comments for this session..."></textarea>
                 </div>
             </div>`;
     });
 }
 
-function validateEmail(email) {
-    return String(email).toLowerCase().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+function toggleS(id) { 
+    document.getElementById(`body-${id}`).classList.toggle('disabled', document.getElementById(`na-${id}`).checked); 
 }
 
 async function startProcess() {
@@ -46,17 +47,16 @@ async function startProcess() {
     const email = document.getElementById('userEmail').value;
     const general = document.getElementById('generalFeedback').value;
 
-    if(!name || !email) return alert("Please enter your name and email.");
-    if(!validateEmail(email)) return alert("Please enter a valid email address format.");
+    if(!name || !email) return alert("Full Name and Email are required.");
+    if(!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return alert("Please enter a valid email address.");
 
-    // Check if email has already submitted
     let usedEmails = JSON.parse(localStorage.getItem('submitted_emails') || "[]");
-    if(usedEmails.includes(email)) {
-        return alert("This email has already submitted a form. Please click the link again if you need to access the site.");
+    if(usedEmails.includes(email.toLowerCase())) {
+        return alert("You have already submitted feedback for this session.");
     }
 
     let attended = [];
-    let msg = `Overall Feedback: ${general}\n\n`;
+    let msg = `OVERALL DAY FEEDBACK: ${general}\n\n`;
     agenda.forEach(item => {
         if(!document.getElementById(`na-${item.id}`).checked) {
             attended.push(item.title);
@@ -64,18 +64,15 @@ async function startProcess() {
         }
     });
 
-    // Save email to prevent double submission
-    usedEmails.push(email);
+    usedEmails.push(email.toLowerCase());
     localStorage.setItem('submitted_emails', JSON.stringify(usedEmails));
 
-    // Hide form and show Thank You
+    // UI Transformation
     document.getElementById('user-view').innerHTML = `
-        <div class="thank-you-msg">
-            <div class="success-icon">✓</div>
-            <h3>Thank You, ${name}!</h3>
-            <p>Your feedback has been submitted successfully.</p>
-            <p>Your certificate is downloading. You may now close this window.</p>
-            <button class="btn-sec" onclick="location.reload()">Back to Home</button>
+        <div style="text-align:center; padding:40px;">
+            <h2 style="color:#28a745;">✓ Thank You</h2>
+            <p>Your feedback has been received and your certificate is downloading.</p>
+            <button class="btn-sec" onclick="location.reload()">Return Home</button>
         </div>`;
 
     await generateCert(name, attended, false);
@@ -87,12 +84,136 @@ async function startProcess() {
     });
 }
 
-// (Keep generateCert, checkAdmin, showTab, updateGlobalDate, etc. from previous version)
+// --- ADMIN & ANALYSIS FUNCTIONS ---
 function checkAdmin() {
-    if (prompt("Enter Admin Password:") === ADMIN_PASS) {
+    if (prompt("Admin Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         renderAdminAgenda();
     }
 }
-// ... [Existing admin functions stay here]
+
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).style.display = 'block';
+    document.getElementById(`btn-tab-${tab}`).classList.add('active');
+}
+
+function renderAdminAgenda() {
+    const list = document.getElementById('admin-agenda-list');
+    list.innerHTML = "";
+    agenda.forEach((item, index) => {
+        list.innerHTML += `
+            <div class="admin-session-box">
+                <div class="admin-row">
+                    <input type="text" style="width:70px" value="${item.time}" onchange="updateAgenda(${index}, 'time', this.value)">
+                    <input type="text" value="${item.title}" onchange="updateAgenda(${index}, 'title', this.value)">
+                    <button class="btn-del" onclick="removeSession(${index})">×</button>
+                </div>
+                <input type="text" value="${item.speakers.join(', ')}" onchange="updateSpeakers(${index}, this.value)">
+                <div class="btn-row">
+                    ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Cert: ${s}</button>`).join('')}
+                </div>
+            </div>`;
+    });
+}
+
+function updateAgenda(i, k, v) { agenda[i][k] = v; save(); }
+function updateSpeakers(i, v) { agenda[i].speakers = v.split(','); save(); renderAdminAgenda(); }
+function addSession() { agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Speaker"] }); save(); renderAdminAgenda(); }
+function removeSession(i) { agenda.splice(i, 1); save(); renderAdminAgenda(); }
+function save() { localStorage.setItem('ace_agenda', JSON.stringify(agenda)); }
+function updateGlobalDate(v) { eventDate = v; localStorage.setItem('ace_date', v); document.getElementById('date-display').innerText = v; }
+
+function handleFileUpload(event) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('raw-data-input').value = e.target.result;
+        processImportedData();
+    };
+    reader.readAsText(event.target.files[0]);
+}
+
+function processImportedData() {
+    const data = document.getElementById('raw-data-input').value;
+    const container = document.getElementById('analysis-results');
+    container.innerHTML = "";
+
+    agenda.forEach((session, idx) => {
+        const matches = data.match(new RegExp(`${session.title}.*?(Excellent|Good|Satisfactory|Poor)`, "gi")) || [];
+        let counts = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
+        matches.forEach(m => {
+            if (/Excellent/i.test(m)) counts.Excellent++;
+            if (/Good/i.test(m)) counts.Good++;
+            if (/Satisfactory/i.test(m)) counts.Satisfactory++;
+            if (/Poor/i.test(m)) counts.Poor++;
+        });
+
+        let comments = [];
+        const commRegex = new RegExp(`${session.title}.*?Comment:\\s*(.*?)(?=\\n|\\r|$)`, "gi");
+        let m; while ((m = commRegex.exec(data)) !== null) if(m[1].length > 2) comments.push(m[1]);
+
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `
+            <h4>${session.title}</h4>
+            <div class="chart-flex">
+                <canvas id="chart-${idx}" width="180" height="180"></canvas>
+                <div class="comments-preview">
+                    <h5>Comments:</h5>
+                    ${comments.map(c => `<div class="comm-item">"${c}"</div>`).join('') || '<p>None</p>'}
+                </div>
+            </div>`;
+        container.appendChild(card);
+
+        new Chart(document.getElementById(`chart-${idx}`), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts).some(v => v > 0) ? Object.values(counts) : [1,0,0,0],
+                    backgroundColor: ['#005eb8', '#41b6e6', '#002f5c', '#d93025']
+                }]
+            },
+            options: { responsive: false }
+        });
+    });
+}
+
+// --- CERTIFICATE ENGINE ---
+async function generateCert(name, detail, isSpeaker) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'pt', 'a4');
+    
+    doc.setGState(new doc.GState({opacity: 0.08}));
+    doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); 
+    doc.setGState(new doc.GState({opacity: 1.0}));
+
+    doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
+    doc.addImage(MFT_LOGO, 'PNG', 680, 40, 120, 45);
+
+    doc.setDrawColor(0, 94, 184); doc.setLineWidth(5); doc.rect(20, 20, 802, 555);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(28); doc.setTextColor(0, 51, 102);
+    doc.text("Critical Care ACE Day", 421, 100, {align:"center"});
+    
+    doc.setFontSize(22); doc.setTextColor(0);
+    doc.text(isSpeaker ? "SPEAKER CERTIFICATE" : "CERTIFICATE OF ATTENDANCE", 421, 180, {align:"center"});
+    
+    doc.setFontSize(40); doc.setTextColor(0, 94, 184);
+    doc.text(name, 421, 280, {align:"center"});
+
+    doc.setFontSize(16); doc.setTextColor(0); doc.setFont("helvetica", "normal");
+    const desc = isSpeaker ? `For delivering the presentation: "${detail}"` : "For attending the sessions held on:";
+    doc.text(desc, 421, 330, {align:"center"});
+    doc.setFont("helvetica", "bold"); doc.text(eventDate, 421, 360, {align:"center"});
+
+    if(!isSpeaker) {
+        doc.setFontSize(10);
+        let y = 390;
+        detail.forEach(t => { doc.text(`• ${t}`, 421, y, {align:"center"}); y+=18; });
+    }
+
+    doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
+    doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
+}
