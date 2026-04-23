@@ -1,23 +1,37 @@
-body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 20px; }
-.card { background: white; max-width: 700px; margin: auto; padding: 30px; border-radius: 15px; border-top: 8px solid #005eb8; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-.nhs-logo { color: #005eb8; font-weight: bold; cursor: pointer; text-align: right; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f4f7; padding: 20px; color: #333; }
+.card { background: white; max-width: 750px; margin: auto; padding: 35px; border-radius: 12px; border-top: 10px solid #005eb8; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.nhs-logo { color: #005eb8; font-weight: bold; font-size: 20px; cursor: pointer; text-align: right; }
 .header-section { text-align: center; }
-.form-row { display: flex; gap: 15px; margin: 20px 0; }
-.form-group { flex: 1; }
-input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+h2 { color: #002f5c; margin: 5px 0; }
+.subtitle { color: #005eb8; font-weight: bold; margin: 0; }
+.lead-text { font-size: 14px; color: #666; margin-top: 5px; }
 
-.session-card { border: 1px solid #eee; border-radius: 8px; margin-top: 15px; }
-.session-header { background: #f8f9fa; padding: 10px; display: flex; justify-content: space-between; }
+.form-row { display: flex; gap: 15px; margin: 25px 0; }
+.form-group { flex: 1; }
+label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
+input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; box-sizing: border-box; }
+
+.session-card { background: #f9fbff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+.session-header { background: #002f5c; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
 .session-body { padding: 15px; }
 .rating-grid { display: flex; gap: 10px; margin-bottom: 10px; }
-.disabled { opacity: 0.2; pointer-events: none; }
-.na-check { font-size: 11px; color: #c00; }
+.disabled { opacity: 0.2; pointer-events: none; background: #eee; }
+.na-check { font-size: 12px; cursor: pointer; color: #ffcccc; }
 
-.btn-primary { width: 100%; background: #005eb8; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-.btn-sec { background: #eee; padding: 10px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; margin: 5px; }
-.btn-danger { background: #d93025; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+.btn-primary { width: 100%; background: #005eb8; color: white; padding: 18px; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+.btn-primary:hover { background: #004a91; }
 
-/* Admin Panel Styling */
-#admin-view { border-top: 2px dashed #005eb8; margin-top: 20px; padding-top: 20px; }
-.admin-item { display: flex; gap: 5px; margin-bottom: 10px; }
-.admin-item input { font-size: 12px; }
+/* Admin Panel Styles */
+.admin-nav { display: flex; justify-content: space-between; align-items: center; background: #eee; padding: 10px 15px; border-radius: 8px; }
+.admin-tabs { display: flex; gap: 5px; margin: 20px 0; }
+.tab-btn { flex: 1; padding: 12px; cursor: pointer; border: 1px solid #ddd; background: #fff; }
+.tab-btn.active { background: #005eb8; color: white; border-color: #005eb8; }
+.admin-session-box { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #fff; }
+.admin-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.inp-time { flex: 1; }
+.inp-title { flex: 4; }
+.btn-del { background: #d93025; color: white; border: none; border-radius: 5px; cursor: pointer; padding: 0 10px; }
+.speaker-config { background: #f0f4f8; padding: 10px; border-radius: 8px; }
+.speaker-certs-row button { margin: 5px 5px 0 0; font-size: 11px; background: white; border: 1px solid #005eb8; color: #005eb8; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.chart-card { background: white; border: 1px solid #eee; padding: 15px; border-radius: 10px; text-align: center; }
