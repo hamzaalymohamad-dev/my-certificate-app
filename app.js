@@ -7,7 +7,8 @@ const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 let eventDate = localStorage.getItem('ace_date') || "28 April 2026";
 let agenda = JSON.parse(localStorage.getItem('ace_agenda')) || [
     { id: 1, time: "13:30", title: "ICU Echo Audit", speakers: ["Steve Benington", "Suraj", "Vikas", "Hussein"] },
-    { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] }
+    { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] },
+    { id: 3, time: "14:35", title: "Critical Care Updates", speakers: ["Evangelos Boultoukas"] }
 ];
 
 window.onload = () => { 
@@ -31,7 +32,7 @@ function renderUserForm() {
                         <select id="r1-${item.id}"><option value="">Content...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                         <select id="r2-${item.id}"><option value="">Delivery...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                     </div>
-                    <textarea id="comm-${item.id}" placeholder="Takeaways for this session..."></textarea>
+                    <textarea id="comm-${item.id}" placeholder="Your comments..."></textarea>
                 </div>
             </div>`;
     });
@@ -40,7 +41,7 @@ function renderUserForm() {
 function toggleS(id) { document.getElementById(`body-${id}`).classList.toggle('disabled', document.getElementById(`na-${id}`).checked); }
 
 function checkAdmin() {
-    if (prompt("Enter Password:") === ADMIN_PASS) {
+    if (prompt("Enter Clinical Audit Lead Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         renderAdminAgenda();
@@ -65,11 +66,9 @@ function renderAdminAgenda() {
                     <input type="text" value="${item.title}" onchange="updateAgenda(${index}, 'title', this.value)">
                     <button class="btn-del" onclick="removeSession(${index})">×</button>
                 </div>
-                <div class="speaker-edit-zone">
-                    <input type="text" value="${item.speakers.join(', ')}" onchange="updateSpeakers(${index}, this.value)">
-                    <div class="btn-row">
-                        ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Cert: ${s}</button>`).join('')}
-                    </div>
+                <input type="text" value="${item.speakers.join(', ')}" onchange="updateSpeakers(${index}, this.value)">
+                <div class="btn-row">
+                    ${item.speakers.map(s => `<button class="btn-mini" onclick="generateCert('${s.trim()}', '${item.title}', true)">Speaker Cert: ${s}</button>`).join('')}
                 </div>
             </div>`;
     });
@@ -87,7 +86,7 @@ async function generateCert(name, detail, isSpeaker) {
     const doc = new jsPDF('l', 'pt', 'a4');
     
     doc.setGState(new doc.GState({opacity: 0.08}));
-    doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); // FULL PAGE
+    doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); 
     doc.setGState(new doc.GState({opacity: 1.0}));
 
     doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
@@ -115,44 +114,42 @@ async function generateCert(name, detail, isSpeaker) {
     }
 
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name}_Cert.pdf`);
+    doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
 }
 
-// SIMULATED LIVE FEEDBACK (Pulling logic)
-function fetchLiveFeedback() {
-    document.getElementById('sync-status').innerText = "Syncing with Web3Forms API...";
-    setTimeout(() => {
-        document.getElementById('sync-status').innerText = "Data Updated: " + new Date().toLocaleTimeString();
-        renderAnalysis();
-    }, 1500);
-}
-
-function renderAnalysis() {
+function processImportedData() {
+    const data = document.getElementById('raw-data-input').value;
     const container = document.getElementById('analysis-results');
     container.innerHTML = "";
-    agenda.forEach((item, idx) => {
-        const div = document.createElement('div');
-        div.className = 'analysis-card';
-        div.innerHTML = `
-            <h4>${item.title}</h4>
+
+    agenda.forEach((session, idx) => {
+        // Tally results (Basic text scanning logic)
+        const exc = (data.match(new RegExp(`Excellent`, "gi")) || []).length / (agenda.length * 2);
+        const gd = (data.match(new RegExp(`Good`, "gi")) || []).length / (agenda.length * 2);
+        const sat = (data.match(new RegExp(`Satisfactory`, "gi")) || []).length / (agenda.length * 2);
+
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `
+            <h4>${session.title}</h4>
             <div class="chart-flex">
                 <canvas id="chart-${idx}" width="200" height="200"></canvas>
                 <div class="comments-preview">
-                    <h5>Comments Received:</h5>
-                    <ul class="comm-list">
-                        <li>"Insightful data presentation."</li>
-                        <li>"Very relevant to current practice."</li>
-                    </ul>
+                    <h5>Feedback Comments:</h5>
+                    <div class="comm-list" id="comm-list-${idx}">
+                        <p style="font-style:italic;">Scanning input data for strings...</p>
+                    </div>
                 </div>
             </div>`;
-        container.appendChild(div);
+        container.appendChild(card);
+
         new Chart(document.getElementById(`chart-${idx}`), {
             type: 'doughnut',
             data: {
-                labels: ["Excellent", "Good", "Satisfactory", "Poor"],
+                labels: ["Excellent", "Good", "Satisfactory"],
                 datasets: [{
-                    data: [Math.floor(Math.random()*20)+10, 5, 2, 0],
-                    backgroundColor: ['#005eb8', '#41b6e6', '#002f5c', '#eee']
+                    data: [exc || 1, gd || 0, sat || 0],
+                    backgroundColor: ['#005eb8', '#41b6e6', '#002f5c']
                 }]
             },
             options: { responsive: false }
@@ -166,11 +163,11 @@ async function startProcess() {
     if(!name || !email) return alert("Please enter Name and Email");
 
     let attended = [];
-    let feedback = "";
+    let msg = "";
     agenda.forEach(item => {
         if(!document.getElementById(`na-${item.id}`).checked) {
             attended.push(item.title);
-            feedback += `[${item.title}] Content: ${document.getElementById(`r1-${item.id}`).value}, Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
+            msg += `[${item.title}] Content: ${document.getElementById(`r1-${item.id}`).value}, Delivery: ${document.getElementById(`r2-${item.id}`).value}. Comment: ${document.getElementById(`comm-${item.id}`).value}\n\n`;
         }
     });
 
@@ -179,6 +176,6 @@ async function startProcess() {
     fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: feedback })
-    }).then(() => { alert("Feedback submitted!"); location.reload(); });
+        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg })
+    }).then(() => { alert("Feedback Sent Successfully!"); location.reload(); });
 }
