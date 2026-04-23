@@ -1,18 +1,29 @@
-body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 20px; }
-.card { background: white; max-width: 600px; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 8px solid #005eb8; }
-.header-section { text-align: center; }
-h2 { color: #002f5c; margin-bottom: 5px; }
-.subtitle { color: #666; margin: 0; }
-.form-row { display: flex; gap: 15px; margin-top: 20px; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f9; padding: 20px; color: #333; }
+.card { background: white; max-width: 700px; margin: auto; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 10px solid #005eb8; }
+
+.nhs-logo { color: #005eb8; font-weight: bold; font-size: 24px; text-align: right; margin-bottom: -10px; }
+.header-section { text-align: center; margin-bottom: 25px; }
+h2 { color: #002f5c; margin: 5px 0; }
+.subtitle { color: #005eb8; font-weight: 600; margin-bottom: 10px; }
+.event-meta { font-size: 13px; color: #666; margin: 2px 0; }
+
+.form-row { display: flex; gap: 20px; margin-top: 25px; }
 .form-group { flex: 1; }
-label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
-input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-.session-card { border: 1px solid #eee; border-radius: 8px; margin-top: 15px; overflow: hidden; }
-.session-header { background: #f8f9fa; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 6px; }
+input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+
+.section-title { margin-top: 30px; border-left: 5px solid #005eb8; padding-left: 12px; font-size: 18px; }
+.instruction { font-size: 13px; color: #888; margin-bottom: 15px; }
+
+.session-card { background: #f8f9fc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+.session-header { background: #002f5c; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
 .session-body { padding: 15px; }
 .rating-grid { display: flex; gap: 10px; margin-bottom: 10px; }
-.disabled { opacity: 0.3; pointer-events: none; background: #fafafa; }
-.na-check { font-size: 11px; color: #d93025; cursor: pointer; }
-.error-banner { background: #fee; color: #c00; padding: 10px; border-radius: 5px; margin-top: 15px; display: none; text-align: center; font-weight: bold; }
-button { width: 100%; background: #005eb8; color: white; padding: 15px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+.disabled { opacity: 0.3; pointer-events: none; background: #eee; }
+.na-check { font-size: 12px; cursor: pointer; color: #ff9999; }
+
+.error-banner { background: #fff5f5; color: #c53030; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; text-align: center; border: 1px solid #feb2b2; font-weight: bold; }
+button { width: 100%; background: #005eb8; color: white; padding: 18px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 30px; transition: background 0.2s; }
 button:hover { background: #004a91; }
+
+@media (max-width: 600px) { .form-row { flex-direction: column; } }
