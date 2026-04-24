@@ -6,12 +6,16 @@ const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
 const RATING_COLORS = { Excellent: '#28a745', Good: '#41b6e6', Satisfactory: '#ffc107', Poor: '#d93025' };
 
+// --- HARDCODED MASTER AGENDA ---
+// Edit the titles and speakers here to ensure they show up for ALL users instantly.
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
     date: "28 April 2026",
     agenda: [
         { id: 1, time: "13:30", title: "ICU Echo Audit", speakers: ["Steve Benington", "Suraj", "Vikas", "Hussein"] },
-        { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] }
+        { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] },
+        { id: 3, time: "15:00", title: "Coffee Break", speakers: ["N/A"] },
+        { id: 4, time: "15:30", title: "New Guidelines Presentation", speakers: ["Mohamad Aly", "Sarah Jenkins"] }
     ]
 };
 
@@ -55,7 +59,7 @@ async function startProcess() {
     if(!name || !email || !general) return alert("Please fill Name, Email, and Overall Feedback.");
 
     let attended = [];
-    let msg = `GENERAL: ${general}\n\n`;
+    let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
     let err = false;
 
     liveData.agenda.forEach(item => {
@@ -75,14 +79,19 @@ async function startProcess() {
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center;'>Thank You! Downloading Certificate...</h2>";
+    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center; color:#005eb8;'>Submitted Successfully!</h2><p style='text-align:center;'>Your certificate is downloading...</p>";
     await generateCert(name, attended, false);
-    fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) });
+    
+    fetch("https://api.web3forms.com/submit", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) 
+    });
 }
 
-// --- ADMIN ---
+// --- ADMIN PANEL ---
 function checkAdmin() {
-    if (prompt("Password:") === ADMIN_PASS) {
+    if (prompt("Enter Admin Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         loadAdminWorkspace();
@@ -97,14 +106,13 @@ function loadAdminWorkspace() {
 }
 
 function addSession() {
-    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Presentation", speakers: ["Speaker Name"] });
+    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Name"] });
     renderAdminAgenda();
 }
 
 function renderAdminAgenda() {
     const list = document.getElementById('admin-agenda-list');
     list.innerHTML = adminWork.agenda.map((item, index) => {
-        // Individual Buttons Logic
         const speakerButtons = item.speakers.map(s => 
             `<button onclick="generateCert('${s.trim()}', '${item.title}', true)" class="btn-mini">Cert: ${s.trim()}</button>`
         ).join('');
@@ -117,7 +125,7 @@ function renderAdminAgenda() {
                 <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
             </div>
             <div style="display:flex; gap:10px; flex-direction: column;">
-                <input type="text" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speakers (comma separated)" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
                 <div style="display:flex; gap:5px; flex-wrap: wrap;">
                     ${speakerButtons}
                 </div>
@@ -131,7 +139,7 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Live Portal Updated!");
+    alert("Live Portal Updated for THIS browser!");
     applyLiveUI();
 }
 
@@ -210,12 +218,7 @@ function renderD(idx, type, v) {
     new Chart(document.getElementById(`${type}-${idx}`), {
         type: 'doughnut',
         data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: { legend: { display: false } }, 
-            cutout: '70%' 
-        }
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, cutout: '70%' }
     });
 }
 
