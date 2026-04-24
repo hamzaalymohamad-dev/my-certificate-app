@@ -4,7 +4,7 @@ const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview
 const MFT_LOGO = "https://i.postimg.cc/bN5B3YLk/mft.png";
 const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
-const RATING_COLORS = { Excellent: '#2ecc71', Good: '#3498db', Satisfactory: '#f1c40f', Poor: '#e74c3c' };
+const RATING_COLORS = { Excellent: '#28a745', Good: '#41b6e6', Satisfactory: '#ffc107', Poor: '#d93025' };
 
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
@@ -29,38 +29,40 @@ function renderUserForm() {
     const container = document.getElementById('sessions-container');
     container.innerHTML = liveData.agenda.map(item => `
         <div class="session-card">
-            <div class="session-head">
-                <div class="session-info">
-                    <span class="time-tag">${item.time}</span>
-                    <span class="title-tag">${item.title}</span>
-                </div>
-                <label class="na-check"><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
+            <div class="session-header" style="background:#002f5c; color:white; padding:10px; display:flex; justify-content:space-between;">
+                <strong>${item.time} - ${item.title}</strong>
+                <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
             </div>
-            <div class="session-body" id="body-${item.id}">
-                <div class="rating-grid">
-                    <div class="rating-box"><span>Content Quality:</span><select id="r1-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                    <div class="rating-box"><span>Speaker Delivery:</span><select id="r2-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
+            <div class="session-body" id="body-${item.id}" style="padding:15px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span>Content: *</span>
+                    <select id="r1-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
                 </div>
-                <textarea id="comm-${item.id}" placeholder="Please share any specific thoughts on this session..." required></textarea>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span>Delivery: *</span>
+                    <select id="r2-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
+                </div>
+                <textarea id="comm-${item.id}" placeholder="Comments..." required style="width:100%; height:60px;"></textarea>
             </div>
         </div>`).join('');
 }
 
 function toggleS(id) {
     const isNA = document.getElementById(`na-${id}`).checked;
-    const b = document.getElementById(`body-${id}`);
-    b.classList.toggle('disabled', isNA);
-    b.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
+    const body = document.getElementById(`body-${id}`);
+    body.style.opacity = isNA ? "0.3" : "1";
+    body.style.pointerEvents = isNA ? "none" : "auto";
+    body.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
 }
 
 async function startProcess() {
     const name = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
     const general = document.getElementById('generalFeedback').value.trim();
-    if(!name || !email || !general) return alert("Please complete Name, Email, and Overall Feedback.");
+    if(!name || !email || !general) return alert("Please fill all mandatory fields.");
 
     let attended = [];
-    let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
+    let msg = `GENERAL: ${general}\n\n`;
     let err = false;
 
     liveData.agenda.forEach(item => {
@@ -74,13 +76,13 @@ async function startProcess() {
         }
     });
 
-    if(err || attended.length === 0) return alert("Please complete feedback for at least one attended session.");
+    if(err || attended.length === 0) return alert("Please provide feedback for attended sessions.");
 
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = `<div class="status-msg success"><h3>Submission Successful</h3><p>Your certificate is being generated. Thank you for your participation.</p></div>`;
+    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center'>Thank You</h2><p style='text-align:center'>Generating Certificate...</p>";
     await generateCert(name, attended, false);
     fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) });
 }
@@ -102,22 +104,22 @@ function loadAdminWorkspace() {
 }
 
 function addSession() {
-    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Audit Presentation", speakers: ["Speaker"] });
+    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Speaker"] });
     renderAdminAgenda();
 }
 
 function renderAdminAgenda() {
     const list = document.getElementById('admin-agenda-list');
     list.innerHTML = adminWork.agenda.map((item, index) => `
-        <div class="admin-item">
-            <div class="admin-item-row">
-                <input type="text" class="time-input" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
-                <input type="text" class="title-input" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
-                <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
+        <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:8px; background:#fff;">
+            <div style="display:flex; gap:10px; margin-bottom:5px;">
+                <input type="text" style="width:70px" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
+                <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
+                <button onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()" style="background:#d93025; color:white; border:none; border-radius:4px; padding:0 8px; cursor:pointer;">×</button>
             </div>
-            <div class="admin-item-row sub">
-                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speakers" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
-                <button onclick="generateCert('${item.speakers[0]}', '${item.title}', true)" class="btn-action">Speaker PDF</button>
+            <div style="display:flex; gap:5px;">
+                <input type="text" style="flex:1" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <button onclick="generateCert('${item.speakers[0]}', '${item.title}', true)" style="background:#005eb8; color:white; border:none; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Speaker PDF</button>
             </div>
         </div>`).join('');
 }
@@ -127,28 +129,25 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Live Portal Updated Successfully.");
+    alert("Live Portal Synced!");
     applyLiveUI();
 }
 
-// --- LOGS ---
+// --- LOG MANAGEMENT ---
 function renderLog() {
     const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     document.getElementById('attendance-log-list').innerHTML = logs.reverse().map((l, i) => `
-        <div class="log-row">
-            <div class="log-info">
-                <strong>${l.name}</strong>
-                <small>${l.date}</small>
+        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+            <div><strong>${l.name}</strong><br><small style="color:#888">${l.date}</small></div>
+            <div style="display:flex; gap:5px;">
+                <button onclick="regenerateFromLog(${logs.length - 1 - i})" style="cursor:pointer">PDF</button>
+                <button onclick="deleteLog(${logs.length - 1 - i})" style="background:#fcc; border:1px solid #c00; color:#c00; cursor:pointer; border-radius:3px;">×</button>
             </div>
-            <div class="log-btns">
-                <button onclick="regenerateFromLog(${logs.length - 1 - i})" class="btn-action">PDF</button>
-                <button onclick="deleteSingleLog(${logs.length - 1 - i})" class="btn-del-mini">×</button>
-            </div>
-        </div>`).join('') || '<p style="text-align:center; padding:20px; color:#999;">No logs found.</p>';
+        </div>`).join('');
 }
 
-function deleteSingleLog(idx) {
-    if(!confirm("Delete this attendance record?")) return;
+function deleteLog(idx) {
+    if(!confirm("Delete this log permanently?")) return;
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.splice(idx, 1);
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
@@ -156,7 +155,7 @@ function deleteSingleLog(idx) {
 }
 
 function clearAllLogs() {
-    if(!confirm("DANGER: This will delete ALL attendance history. Continue?")) return;
+    if(!confirm("Delete ALL logs? This cannot be undone.")) return;
     localStorage.removeItem('ace_attendance_log');
     renderLog();
 }
@@ -168,15 +167,21 @@ function regenerateFromLog(idx) {
 
 // --- ANALYSIS ---
 function handleFileUpload(e) {
-    const reader = new FileReader();
-    reader.onload = (f) => { document.getElementById('raw-data-input').value = f.target.result; processImportedData(); };
-    reader.readAsText(e.target.files[0]);
+    const r = new FileReader();
+    r.onload = (f) => { document.getElementById('raw-data-input').value = f.target.result; processImportedData(); };
+    r.readAsText(e.target.files[0]);
 }
 
 function processImportedData() {
     const raw = document.getElementById('raw-data-input').value;
     const container = document.getElementById('analysis-results');
-    container.innerHTML = "";
+    container.innerHTML = `<div style="display:flex; gap:10px; justify-content:center; font-size:12px; margin-bottom:15px;">
+        <span><i style="display:inline-block; width:10px; height:10px; background:#28a745;"></i> Exc</span>
+        <span><i style="display:inline-block; width:10px; height:10px; background:#41b6e6;"></i> Good</span>
+        <span><i style="display:inline-block; width:10px; height:10px; background:#ffc107;"></i> Sat</span>
+        <span><i style="display:inline-block; width:10px; height:10px; background:#d93025;"></i> Poor</span>
+    </div>`;
+
     liveData.agenda.forEach((session, idx) => {
         let cC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
         let dC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
@@ -188,24 +193,24 @@ function processImportedData() {
                 const comM = block.match(/COMMENT\|(.*?)(?=\n|SESS_END)/); if (comM) comms.push(comM[1].trim());
             }
         });
-        const card = document.createElement('div');
-        card.className = 'analysis-card';
-        card.innerHTML = `<h4>${session.title}</h4><div class="chart-row">
-            <canvas id="c-${idx}" width="120" height="120"></canvas>
-            <canvas id="d-${idx}" width="120" height="120"></canvas>
-        </div><div class="comm-list">${comms.map(c=>`• ${c}`).join('<br>') || 'No comments'}</div>`;
-        container.appendChild(card);
+        const div = document.createElement('div');
+        div.style = "border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:15px;";
+        div.innerHTML = `<h4>${session.title}</h4><div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="text-align:center"><canvas id="c-${idx}" width="120" height="120"></canvas><p style="font-size:11px">Content (${Object.values(cC).reduce((a,b)=>a+b,0)})</p></div>
+            <div style="text-align:center"><canvas id="d-${idx}" width="120" height="120"></canvas><p style="font-size:11px">Delivery (${Object.values(dC).reduce((a,b)=>a+b,0)})</p></div>
+            <div style="flex:1; background:#f9f9f9; padding:10px; border-radius:8px; font-size:12px; height:120px; overflow-y:auto;"><b>Comments:</b><br>${comms.join('<br>• ') || 'None'}</div>
+        </div>`;
+        container.appendChild(div);
         renderD(idx, 'c', cC); renderD(idx, 'd', dC);
     });
 }
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-const sum = obj => Object.values(obj).reduce((a, b) => a + b, 0);
-
 function renderD(idx, type, v) {
+    const has = Object.values(v).reduce((a,b)=>a+b,0) > 0;
     new Chart(document.getElementById(`${type}-${idx}`), {
         type: 'doughnut',
-        data: { labels: Object.keys(v), datasets: [{ data: sum(v) > 0 ? Object.values(v) : [1], backgroundColor: sum(v) > 0 ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
+        data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
         options: { plugins: { legend: { display: false } }, cutout: '75%' }
     });
 }
