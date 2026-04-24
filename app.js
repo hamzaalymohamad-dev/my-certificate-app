@@ -6,16 +6,17 @@ const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
 const RATING_COLORS = { Excellent: '#28a745', Good: '#41b6e6', Satisfactory: '#ffc107', Poor: '#d93025' };
 
-// --- HARDCODED MASTER AGENDA ---
-// Edit the titles and speakers here to ensure they show up for ALL users instantly.
+// --- HARDCODED MASTER AGENDA (From Image) ---
+// These sessions will now show for every user on every browser.
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
     date: "28 April 2026",
     agenda: [
-        { id: 1, time: "13:30", title: "ICU Echo Audit", speakers: ["Steve Benington", "Suraj", "Vikas", "Hussein"] },
+        { id: 1, time: "13:30", title: "Critical Care Echo Audit", speakers: ["Steve Benington", "Suraj", "Vikas", "Hussein"] },
         { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] },
-        { id: 3, time: "15:00", title: "Coffee Break", speakers: ["N/A"] },
-        { id: 4, time: "15:30", title: "New Guidelines Presentation", speakers: ["Mohamad Aly", "Sarah Jenkins"] }
+        { id: 3, time: "14:35", title: "ICM recent Updates", speakers: ["Speaker Name"] },
+        { id: 4, time: "15:05", title: "Justice in Critical Care - a question of allocation", speakers: ["Speaker Name"] },
+        { id: 5, time: "15:45", title: "PICC Line Insertion Service", speakers: ["Speaker Name"] }
     ]
 };
 
@@ -113,6 +114,7 @@ function addSession() {
 function renderAdminAgenda() {
     const list = document.getElementById('admin-agenda-list');
     list.innerHTML = adminWork.agenda.map((item, index) => {
+        // Splitting multiple speakers by comma for individual buttons
         const speakerButtons = item.speakers.map(s => 
             `<button onclick="generateCert('${s.trim()}', '${item.title}', true)" class="btn-mini">Cert: ${s.trim()}</button>`
         ).join('');
@@ -139,11 +141,11 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Live Portal Updated for THIS browser!");
+    alert("Live Portal Updated for THIS browser! (To update for all, edit app.js file directly)");
     applyLiveUI();
 }
 
-// --- LOGS ---
+// --- ATTENDANCE LOGS ---
 function renderLog() {
     const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     document.getElementById('attendance-log-list').innerHTML = logs.reverse().map((l, i) => `
@@ -175,7 +177,7 @@ function regenerateFromLog(idx) {
     generateCert(logs[idx].name, logs[idx].sessions, false);
 }
 
-// --- ANALYSIS ---
+// --- ANALYSIS LOGIC ---
 function handleFileUpload(e) {
     const reader = new FileReader();
     reader.onload = (f) => { document.getElementById('raw-data-input').value = f.target.result; processImportedData(); };
@@ -229,6 +231,7 @@ function showTab(t) {
     document.getElementById(`btn-tab-${t}`).classList.add('active');
 }
 
+// --- CERTIFICATE GENERATION ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
