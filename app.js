@@ -1,8 +1,3 @@
-/**
- * Critical Care ACE Day - ULTIMATE CONSOLIDATED LOGIC
- * Includes: Admin Login, Add Session, Mandatory Fields, & Anchor-Parser
- */
-
 const ACCESS_KEY = "d0491ab4-b81b-43f5-9341-10a60a6309fe";
 const ADMIN_PASS = "Aly2026";
 const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png";
@@ -16,7 +11,7 @@ const RATING_COLORS = {
     Poor: '#d93025'
 };
 
-// --- DATA INITIALIZATION ---
+// --- CORE DATA ---
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
     date: "28 April 2026",
@@ -30,103 +25,7 @@ let adminWork = JSON.parse(JSON.stringify(liveData));
 
 window.onload = () => { applyLiveUI(); };
 
-// --- USER UI LOGIC ---
-function applyLiveUI() {
-    document.getElementById('date-display').innerText = liveData.date;
-    const formArea = document.getElementById('form-active-area');
-    const closedMsg = document.getElementById('form-closed-msg');
-    
-    if (liveData.status === "closed") {
-        formArea.style.display = 'none';
-        closedMsg.style.display = 'block';
-    } else {
-        formArea.style.display = 'block';
-        closedMsg.style.display = 'none';
-    }
-    renderUserForm(); 
-}
-
-function renderUserForm() {
-    const container = document.getElementById('sessions-container');
-    container.innerHTML = "";
-    liveData.agenda.forEach(item => {
-        container.innerHTML += `
-            <div class="session-card">
-                <div class="session-header">
-                    <strong>${item.time} - ${item.title}</strong>
-                    <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
-                </div>
-                <div class="session-body" id="body-${item.id}">
-                    <div class="rating-row">
-                        <span>Content: *</span>
-                        <select id="r1-${item.id}" required>
-                            <option value="">Select...</option>
-                            <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
-                        </select>
-                    </div>
-                    <div class="rating-row">
-                        <span>Delivery: *</span>
-                        <select id="r2-${item.id}" required>
-                            <option value="">Select...</option>
-                            <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
-                        </select>
-                    </div>
-                    <textarea id="comm-${item.id}" placeholder="Mandatory comments for this session..." required></textarea>
-                </div>
-            </div>`;
-    });
-}
-
-function toggleS(id) { 
-    const isNA = document.getElementById(`na-${id}`).checked;
-    const body = document.getElementById(`body-${id}`);
-    body.classList.toggle('disabled', isNA);
-    body.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
-}
-
-// --- SUBMISSION & VALIDATION ---
-async function startProcess() {
-    const name = document.getElementById('userName').value.trim();
-    const email = document.getElementById('userEmail').value.trim();
-    const general = document.getElementById('generalFeedback').value.trim();
-
-    if(!name || !email || !general) return alert("Full Name, Email, and Overall Feedback are mandatory.");
-    
-    let attended = [];
-    let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
-    let validationFailed = false;
-
-    liveData.agenda.forEach(item => {
-        if(!document.getElementById(`na-${item.id}`).checked) {
-            const r1 = document.getElementById(`r1-${item.id}`).value;
-            const r2 = document.getElementById(`r2-${item.id}`).value;
-            const cm = document.getElementById(`comm-${item.id}`).value.trim();
-
-            if(!r1 || !r2 || !cm) { validationFailed = true; return; }
-
-            attended.push(item.title);
-            msg += `SESS_START|${item.title}\nSCORE_C|${r1}\nSCORE_D|${r2}\nCOMMENT|${cm}\nSESS_END\n\n`;
-        }
-    });
-
-    if(validationFailed) return alert("All fields (ratings and comments) are mandatory for attended sessions.");
-    if(attended.length === 0) return alert("Please provide feedback for at least one session.");
-
-    let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-    logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
-    localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
-
-    document.getElementById('user-view').innerHTML = `<div class="thank-you-msg"><h2>✓ Success</h2><p>Your certificate is downloading now.</p></div>`;
-
-    await generateCert(name, attended, false);
-    fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg })
-    });
-}
-
-// --- RESTORED ADMIN LOGIN & LOGIC ---
+// --- ADMIN LOGIN & UI SWITCH ---
 function checkAdmin() {
     const pass = prompt("Enter Admin Password:");
     if (pass === ADMIN_PASS) {
@@ -145,9 +44,15 @@ function loadAdminWorkspace() {
     renderLog();
 }
 
-function addSession() { 
-    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Audit Presentation", speakers: ["Speaker"] }); 
-    renderAdminAgenda(); 
+// --- SESSION MANAGEMENT (RESTORED) ---
+function addSession() {
+    adminWork.agenda.push({
+        id: Date.now(),
+        time: "00:00",
+        title: "New Presentation Title",
+        speakers: ["Speaker Name"]
+    });
+    renderAdminAgenda();
 }
 
 function renderAdminAgenda() {
@@ -155,13 +60,14 @@ function renderAdminAgenda() {
     list.innerHTML = "";
     adminWork.agenda.forEach((item, index) => {
         list.innerHTML += `
-            <div class="admin-session-box">
-                <div class="admin-row">
+            <div class="admin-session-box" style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:8px; background:#fff;">
+                <div style="display:flex; gap:10px; margin-bottom:5px;">
                     <input type="text" style="width:70px" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
-                    <input type="text" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
-                    <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
+                    <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
+                    <button onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()" style="background:#d93025; color:white; border:none; border-radius:4px; cursor:pointer; padding:0 10px;">×</button>
                 </div>
-                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speaker Names" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <input type="text" placeholder="Speakers (comma separated)" value="${item.speakers.join(', ')}" 
+                       onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())" style="width:100%">
             </div>`;
     });
 }
@@ -171,18 +77,113 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Live Portal Updated Successfully!");
+    alert("Live Portal Synced!");
     applyLiveUI();
 }
 
-// --- RESTORED LOGS & ANALYSIS ---
+// --- USER FORM LOGIC ---
+function applyLiveUI() {
+    document.getElementById('date-display').innerText = liveData.date;
+    const formArea = document.getElementById('form-active-area');
+    const closedMsg = document.getElementById('form-closed-msg');
+    
+    if (liveData.status === "closed") {
+        formArea.style.display = 'none';
+        closedMsg.style.display = 'block';
+    } else {
+        formArea.style.display = 'block';
+        closedMsg.style.display = 'none';
+    }
+    renderUserForm();
+}
+
+function renderUserForm() {
+    const container = document.getElementById('sessions-container');
+    container.innerHTML = "";
+    liveData.agenda.forEach(item => {
+        container.innerHTML += `
+            <div class="session-card">
+                <div class="session-header" style="background:#002f5c; color:white; padding:10px; display:flex; justify-content:space-between;">
+                    <strong>${item.time} - ${item.title}</strong>
+                    <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
+                </div>
+                <div class="session-body" id="body-${item.id}" style="padding:15px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span>Content Rating: *</span>
+                        <select id="r1-${item.id}" required>
+                            <option value="">Select...</option>
+                            <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span>Delivery Rating: *</span>
+                        <select id="r2-${item.id}" required>
+                            <option value="">Select...</option>
+                            <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
+                        </select>
+                    </div>
+                    <textarea id="comm-${item.id}" placeholder="Mandatory session comments..." required style="width:100%; height:60px;"></textarea>
+                </div>
+            </div>`;
+    });
+}
+
+function toggleS(id) {
+    const isNA = document.getElementById(`na-${id}`).checked;
+    const body = document.getElementById(`body-${id}`);
+    body.style.opacity = isNA ? "0.3" : "1";
+    body.style.pointerEvents = isNA ? "none" : "auto";
+    body.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
+}
+
+// --- SUBMISSION ---
+async function startProcess() {
+    const name = document.getElementById('userName').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const general = document.getElementById('generalFeedback').value.trim();
+
+    if(!name || !email || !general) return alert("Full Name, Email, and General Feedback are mandatory.");
+
+    let attended = [];
+    let msg = `GENERAL: ${general}\n\n`;
+    let error = false;
+
+    liveData.agenda.forEach(item => {
+        if(!document.getElementById(`na-${item.id}`).checked) {
+            const r1 = document.getElementById(`r1-${item.id}`).value;
+            const r2 = document.getElementById(`r2-${item.id}`).value;
+            const cm = document.getElementById(`comm-${item.id}`).value.trim();
+            if(!r1 || !r2 || !cm) { error = true; return; }
+            attended.push(item.title);
+            msg += `[${item.title}]\nContent: ${r1}\nDelivery: ${r2}\nComment: ${cm}\n\n`;
+        }
+    });
+
+    if(error) return alert("Please fill ratings and comments for all attended sessions.");
+    if(attended.length === 0) return alert("Select at least one session.");
+
+    let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
+    localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
+
+    document.getElementById('user-view').innerHTML = `<h2 style="text-align:center">✓ Thank You</h2><p style="text-align:center">Downloading Certificate...</p>`;
+
+    await generateCert(name, attended, false);
+    fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg })
+    });
+}
+
+// --- LOGS & ANALYSIS ---
 function renderLog() {
     const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     const container = document.getElementById('attendance-log-list');
     container.innerHTML = logs.reverse().map((l, i) => `
-        <div class="log-entry">
-            <span><strong>${l.name}</strong></span>
-            <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
+        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+            <span>${l.name}</span>
+            <button onclick="regenerateFromLog(${logs.length - 1 - i})" style="cursor:pointer">PDF</button>
         </div>`).join('');
 }
 
@@ -192,62 +193,6 @@ function regenerateFromLog(idx) {
     if(r) generateCert(r.name, r.sessions, false);
 }
 
-function handleFileUpload(e) {
-    const r = new FileReader();
-    r.onload = (f) => { document.getElementById('raw-data-input').value = f.target.result; processImportedData(); };
-    r.readAsText(e.target.files[0]);
-}
-
-function processImportedData() {
-    const raw = document.getElementById('raw-data-input').value;
-    const container = document.getElementById('analysis-results');
-    container.innerHTML = `<div class="analysis-legend"><strong>Key:</strong> 
-        <span class="l-item"><i style="background:#28a745"></i> Excellent</span>
-        <span class="l-item"><i style="background:#41b6e6"></i> Good</span>
-        <span class="l-item"><i style="background:#ffc107"></i> Satisfactory</span>
-        <span class="l-item"><i style="background:#d93025"></i> Poor</span></div>`;
-
-    liveData.agenda.forEach((session, idx) => {
-        const title = session.title.trim();
-        let cC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
-        let dC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
-        let comms = [];
-
-        const blocks = raw.split('SESS_START|');
-        blocks.forEach(block => {
-            if (block.includes(title)) {
-                const cm = block.match(/SCORE_C\|(Excellent|Good|Satisfactory|Poor)/i);
-                if (cm) cC[cap(cm[1])]++;
-                const dm = block.match(/SCORE_D\|(Excellent|Good|Satisfactory|Poor)/i);
-                if (dm) dC[cap(dm[1])]++;
-                const comm = block.match(/COMMENT\|(.*?)(?=\n|SESS_END)/);
-                if (comm && comm[1].trim().length > 1) comms.push(comm[1].trim());
-            }
-        });
-
-        const card = document.createElement('div');
-        card.className = 'analysis-card';
-        card.innerHTML = `<h4>${session.title}</h4><div class="dual-chart-row">
-            <div class="chart-item"><canvas id="c-${idx}" width="130" height="130"></canvas><div class="vote-count">${sum(cC)} Votes</div><p>Content</p></div>
-            <div class="chart-item"><canvas id="d-${idx}" width="130" height="130"></canvas><div class="vote-count">${sum(dC)} Votes</div><p>Delivery</p></div>
-            <div class="comments-preview"><b>Comments:</b><br>${comms.map(c=>`• ${c}`).join('<br>') || 'None'}</div></div>`;
-        container.appendChild(card);
-        renderD(idx, 'c', cC); renderD(idx, 'd', dC);
-    });
-}
-
-const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-const sum = (obj) => Object.values(obj).reduce((a, b) => a + b, 0);
-
-function renderD(idx, type, v) {
-    const has = sum(v) > 0;
-    new Chart(document.getElementById(`${type}-${idx}`), {
-        type: 'doughnut',
-        data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
-        options: { responsive: false, plugins: { legend: { display: false } }, cutout: '70%' }
-    });
-}
-
 function showTab(t) {
     document.querySelectorAll('.tab-content').forEach(c => c.style.display='none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -255,7 +200,7 @@ function showTab(t) {
     document.getElementById(`btn-tab-${t}`).classList.add('active');
 }
 
-// --- PDF CERTIFICATE GENERATOR ---
+// --- PDF ENGINE ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
@@ -275,5 +220,5 @@ async function generateCert(name, detail, isSpeaker) {
         detail.forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
     }
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name}_Certificate.pdf`);
+    doc.save(`${name}_Cert.pdf`);
 }
