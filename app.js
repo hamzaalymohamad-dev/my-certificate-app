@@ -16,7 +16,7 @@ let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
 };
 
 let adminWork = JSON.parse(JSON.stringify(liveData));
-window.onload = () => { applyLiveUI(); };
+window.onload = () => applyLiveUI();
 
 function applyLiveUI() {
     document.getElementById('date-display').innerText = liveData.date;
@@ -36,7 +36,7 @@ function renderUserForm() {
             <div class="session-body" id="body-${item.id}">
                 <div class="rating-row"><span>Content:</span><select id="r1-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
                 <div class="rating-row"><span>Delivery:</span><select id="r2-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                <textarea id="comm-${item.id}" placeholder="Mandatory comments..." required></textarea>
+                <textarea id="comm-${item.id}" placeholder="Comments required..." required></textarea>
             </div>
         </div>`).join('');
 }
@@ -52,7 +52,7 @@ async function startProcess() {
     const name = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
     const general = document.getElementById('generalFeedback').value.trim();
-    if(!name || !email || !general) return alert("Fill all main fields.");
+    if(!name || !email || !general) return alert("Fill all fields.");
 
     let attended = [];
     let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
@@ -75,12 +75,12 @@ async function startProcess() {
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = "<h2>Submitted. Downloading...</h2>";
+    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center;'>Submitted. Downloading Certificate...</h2>";
     await generateCert(name, attended, false);
     fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) });
 }
 
-// --- ADMIN ---
+// --- ADMIN LOGIC ---
 function checkAdmin() {
     if (prompt("Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
@@ -97,21 +97,21 @@ function loadAdminWorkspace() {
 }
 
 function addSession() {
-    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Speaker Name"] });
+    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Speaker"] });
     renderAdminAgenda();
 }
 
 function renderAdminAgenda() {
     const list = document.getElementById('admin-agenda-list');
     list.innerHTML = adminWork.agenda.map((item, index) => `
-        <div class="admin-session-box">
+        <div class="admin-item-box">
             <div style="display:flex; gap:10px; margin-bottom:5px;">
                 <input type="text" style="width:70px" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
                 <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
                 <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
             </div>
-            <div style="display:flex; gap:5px; align-items:center;">
-                <input type="text" style="flex:1" value="${item.speakers.join(', ')}" placeholder="Speakers" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+            <div style="display:flex; gap:5px;">
+                <input type="text" style="flex:1" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
                 <button onclick="generateCert('${item.speakers[0]}', '${item.title}', true)" class="btn-mini">Speaker PDF</button>
             </div>
         </div>`).join('');
@@ -126,6 +126,38 @@ function syncToLive() {
     applyLiveUI();
 }
 
+// --- LOGS ---
+function renderLog() {
+    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    document.getElementById('attendance-log-list').innerHTML = logs.reverse().map((l, i) => `
+        <div class="log-entry">
+            <div><strong>${l.name}</strong><br><small>${l.date}</small></div>
+            <div style="display:flex; gap:5px;">
+                <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
+                <button class="btn-del" style="padding:2px 8px;" onclick="deleteSingleLog(${logs.length - 1 - i})">×</button>
+            </div>
+        </div>`).join('');
+}
+
+function deleteSingleLog(idx) {
+    if(!confirm("Delete this log?")) return;
+    let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    logs.splice(idx, 1);
+    localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
+    renderLog();
+}
+
+function clearAllLogs() {
+    if(!confirm("Clear ALL records?")) return;
+    localStorage.removeItem('ace_attendance_log');
+    renderLog();
+}
+
+function regenerateFromLog(idx) {
+    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    generateCert(logs[idx].name, logs[idx].sessions, false);
+}
+
 // --- ANALYSIS ---
 function handleFileUpload(e) {
     const reader = new FileReader();
@@ -136,15 +168,12 @@ function handleFileUpload(e) {
 function processImportedData() {
     const raw = document.getElementById('raw-data-input').value;
     const container = document.getElementById('analysis-results');
-    container.innerHTML = `<div class="analysis-legend"><span class="l-item"><i style="background:#28a745"></i> Exc</span> <span class="l-item"><i style="background:#41b6e6"></i> Good</span> <span class="l-item"><i style="background:#ffc107"></i> Sat</span> <span class="l-item"><i style="background:#d93025"></i> Poor</span></div>`;
-
+    container.innerHTML = "";
     liveData.agenda.forEach((session, idx) => {
         let cC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
         let dC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
         let comms = [];
-
-        const blocks = raw.split('SESS_START|');
-        blocks.forEach(block => {
+        raw.split('SESS_START|').forEach(block => {
             if (block.includes(session.title.trim())) {
                 const cM = block.match(/SCORE_C\|(Excellent|Good|Satisfactory|Poor)/i);
                 if (cM) cC[cap(cM[1])]++;
@@ -154,37 +183,26 @@ function processImportedData() {
                 if (comM) comms.push(comM[1].trim());
             }
         });
-
         const card = document.createElement('div');
         card.className = 'analysis-card';
-        card.innerHTML = `<h4>${session.title}</h4><div class="dual-chart-row">
-            <div class="chart-item"><canvas id="c-${idx}" width="130" height="130"></canvas><p>Content (${sum(cC)})</p></div>
-            <div class="chart-item"><canvas id="d-${idx}" width="130" height="130"></canvas><p>Delivery (${sum(dC)})</p></div>
-            <div class="comments-preview"><b>Comments:</b><br>${comms.join('<br>• ') || 'None'}</div></div>`;
+        card.innerHTML = `<h4>${session.title}</h4><div class="analysis-row">
+            <canvas id="c-${idx}" width="120" height="120"></canvas>
+            <canvas id="d-${idx}" width="120" height="120"></canvas>
+            <div class="com-box"><b>Comments:</b><br>${comms.join('<br>• ')}</div>
+        </div>`;
         container.appendChild(card);
         renderD(idx, 'c', cC); renderD(idx, 'd', dC);
     });
 }
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-const sum = obj => Object.values(obj).reduce((a, b) => a + b, 0);
-
 function renderD(idx, type, v) {
+    const has = Object.values(v).reduce((a,b)=>a+b,0) > 0;
     new Chart(document.getElementById(`${type}-${idx}`), {
         type: 'doughnut',
-        data: { labels: Object.keys(v), datasets: [{ data: sum(v) > 0 ? Object.values(v) : [1], backgroundColor: sum(v) > 0 ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
-        options: { plugins: { legend: { display: false } }, cutout: '70%' }
+        data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
+        options: { plugins: { legend: { display: false } }, cutout: '75%' }
     });
-}
-
-function renderLog() {
-    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-    document.getElementById('attendance-log-list').innerHTML = logs.reverse().map((l, i) => `<div class="log-entry">${l.name} <button onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button></div>`).join('');
-}
-
-function regenerateFromLog(idx) {
-    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-    generateCert(logs[idx].name, logs[idx].sessions, false);
 }
 
 function showTab(t) {
