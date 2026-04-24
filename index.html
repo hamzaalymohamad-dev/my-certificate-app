@@ -48,7 +48,10 @@
 
             <div id="tab-agenda" class="tab-content">
                 <input type="text" id="admin-date-input" style="margin-bottom:10px;">
-                <select id="form-status-toggle" style="margin-bottom:15px;"><option value="open">Open</option><option value="closed">Closed</option></select>
+                <select id="form-status-toggle" style="margin-bottom:15px;">
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                </select>
                 <div id="admin-agenda-list"></div>
                 <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
@@ -60,9 +63,12 @@
             </div>
 
             <div id="tab-logs" class="tab-content" style="display:none;">
+                <div style="text-align:right; margin-bottom:10px;">
+                    <button class="btn-del" style="padding:5px 10px; font-size:11px;" onclick="clearAllLogs()">Clear All Logs</button>
+                </div>
                 <div id="attendance-log-list"></div>
             </div>
-            <button class="btn-sec" style="color:#999;" onclick="location.reload()">Logout</button>
+            <button class="btn-sec" style="color:#999; border:none;" onclick="location.reload()">Logout</button>
         </div>
 
         <div class="footer-login" onclick="checkAdmin()">Admin Login</div>
