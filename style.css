@@ -1,31 +1,39 @@
-body { font-family: sans-serif; background: #f4f7f9; padding: 20px; }
+body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 20px; }
 .card { background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 15px; border-top: 10px solid #005eb8; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; }
 .watermark-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png') no-repeat center; background-size: 60%; opacity: 0.04; z-index: -1; pointer-events: none; }
+
+.header-section { text-align: center; margin-bottom: 20px; }
 .logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .bee-logo { height: 50px; } .trust-logo { height: 40px; }
+.form-subtitle { margin: 0; color: #666; font-weight: bold; text-transform: uppercase; font-size: 14px; }
+.date-header { color:#005eb8; font-weight:bold; margin-top: 5px; }
+
 .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
-input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
+input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 14px; }
 .session-card { border: 1px solid #eee; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
 .session-header { background: #002f5c; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
 .session-body { padding: 15px; }
 .session-body.disabled { opacity: 0.3; pointer-events: none; }
 .rating-row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
 .rating-row select { width: 130px; margin: 0; }
-.btn-primary { width: 100%; background: #005eb8; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+.btn-primary { width: 100%; background: #005eb8; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
 .btn-sec { width: 100%; background: #fff; color: #005eb8; border: 1px dashed #005eb8; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
 .admin-header-bar { background: #002f5c; color: white; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .admin-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-.tab-btn { flex: 1; padding: 10px; cursor: pointer; border: 1px solid #ddd; background: #eee; border-radius: 6px; }
+.tab-btn { flex: 1; padding: 10px; cursor: pointer; border: 1px solid #ddd; background: #eee; border-radius: 6px; font-weight: bold; }
 .tab-btn.active { background: #005eb8; color: white; }
+
 .admin-item-box { border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 10px; background: #fafafa; }
 .btn-del { background: #d93025; color: white; border: none; border-radius: 4px; cursor: pointer; }
-.btn-mini { background: #005eb8; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; white-space: nowrap; }
+.btn-mini { background: #005eb8; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; white-space: nowrap; }
 .btn-sync { background: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 .log-entry { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
 
-/* Analysis Scaling */
-.analysis-card { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+/* Analysis Dashboard Fixes */
+.analysis-card { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 15px; background: #fff; }
 .analysis-row { display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap; }
-.chart-box { width: 100px; height: 100px; } /* Fixed small size for charts */
+.chart-box { width: 100px; height: 100px; flex-shrink: 0; } 
 .com-box { flex: 1; min-width: 250px; background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 12px; border-left: 3px solid #28a745; max-height: 100px; overflow-y: auto; }
+
 .footer-login { text-align: center; margin-top: 30px; color: #ddd; cursor: pointer; font-size: 10px; }
