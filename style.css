@@ -1,36 +1,6 @@
-body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
-.card { background: #fff; max-width: 850px; margin: 0 auto; padding: 30px; border-radius: 15px; border-top: 10px solid #005eb8; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
-.header-section { text-align: center; margin-bottom: 25px; }
-.logo-row { display: flex; justify-content: space-between; align-items: center; }
-.trust-logo { height: 45px; } .bee-logo { height: 55px; }
-
-.form-row { display: flex; gap: 15px; margin-bottom: 15px; }
-input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-textarea { height: 70px; margin-top: 5px; }
-
-.session-card { border: 1px solid #e1e8ed; border-radius: 12px; margin-bottom: 15px; overflow: hidden; }
-.session-header { background: #002f5c; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-.session-body { padding: 15px; }
-.session-body.disabled { opacity: 0.3; pointer-events: none; background: #f9f9f9; }
-.rating-row { display: flex; justify-content: space-between; align-items: center; background: #f8fafd; padding: 8px; border-radius: 8px; margin-bottom: 8px; }
-.rating-row select { width: 140px; }
-
-.btn-primary { width: 100%; background: #005eb8; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
-.btn-sec { width: 100%; background: #fff; color: #005eb8; border: 2px dashed #005eb8; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-.btn-sync { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-.btn-del { background: #d93025; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-.btn-mini { background: #005eb8; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
-
-.admin-header-bar { background: #002f5c; color: white; padding: 10px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.admin-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-.tab-btn { flex: 1; padding: 10px; cursor: pointer; border: 1px solid #ddd; background: #f1f1f1; border-radius: 6px; font-weight: bold; }
+body { font-family: sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
+.card { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 8px solid #005eb8; }
+.session-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+input, select { border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+.tab-btn { flex: 1; padding: 10px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 6px; }
 .tab-btn.active { background: #005eb8; color: white; border-color: #005eb8; }
-
-.analysis-legend { display: flex; gap: 10px; background: #fff; padding: 10px; border: 1px solid #ddd; margin-bottom: 15px; justify-content: center; font-size: 12px; }
-.l-item i { width: 10px; height: 10px; display: inline-block; margin-right: 4px; }
-.dual-chart-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
-.chart-item { text-align: center; width: 130px; font-size: 11px; color: #005eb8; font-weight: bold; }
-.vote-count { font-size: 10px; color: #777; margin-top: 2px; }
-.comments-preview { flex: 1; background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 12px; border-left: 4px solid #28a745; }
-
-.footer-login { margin-top: 40px; text-align: center; color: #ccc; cursor: pointer; text-decoration: underline; font-size: 10px; }
