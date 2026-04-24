@@ -11,95 +11,66 @@
 <body>
     <div class="watermark-bg"></div>
     <div class="card">
-        <div class="header-section">
-            <div class="logo-row">
-                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo">
-                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
+        <div class="header-section" style="text-align:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" style="height:50px;">
+                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" style="height:40px;">
             </div>
-            <h1>Critical Care ACE Day</h1>
-            <p class="event-tagline">Audit • Case-based discussion • Evidence</p>
-            <div id="date-display" class="date-badge">-- April 2026 --</div>
+            <h2>Critical Care ACE Day</h2>
+            <div id="date-display" style="color:#005eb8; font-weight:bold;">-- April 2026 --</div>
         </div>
 
+        <hr>
+
         <div id="user-view">
-            <div id="form-closed-msg" style="display:none;" class="status-msg error">
-                <h3>Portal Currently Closed</h3>
-                <p>Please contact the Audit Lead if you believe this is an error.</p>
-            </div>
-
+            <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Form Closed</h3></div>
             <div id="form-active-area">
-                <div class="input-grid">
-                    <div class="input-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="userName" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Email Address *</label>
-                        <input type="email" id="userEmail" placeholder="name@example.com" required>
-                    </div>
-                </div>
-
-                <div id="sessions-container" class="sessions-wrapper"></div>
-
-                <div class="input-group full-width">
-                    <label>Overall Event Feedback & Future Suggestions *</label>
-                    <textarea id="generalFeedback" placeholder="How was your experience today? What would you like to see next time?" required></textarea>
-                </div>
-
-                <button class="btn-main" onclick="startProcess()">Submit & Generate Certificate</button>
+                <input type="text" id="userName" placeholder="Full Name *" style="width:100%; padding:10px; margin-bottom:10px;">
+                <input type="email" id="userEmail" placeholder="Email Address *" style="width:100%; padding:10px; margin-bottom:10px;">
+                <div id="sessions-container"></div>
+                <textarea id="generalFeedback" placeholder="Overall Feedback... *" style="width:100%; padding:10px; height:80px;"></textarea>
+                <button onclick="startProcess()" style="width:100%; padding:15px; background:#005eb8; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:20px;">Submit & Download Certificate</button>
             </div>
         </div>
 
         <div id="admin-view" style="display:none;">
-            <div class="admin-top-nav">
-                <h3>Admin Dashboard</h3>
-                <button class="btn-success" onclick="syncToLive()">Sync Changes to Live</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#eee; padding:10px; border-radius:8px; margin-bottom:15px;">
+                <strong>Admin Panel</strong>
+                <button onclick="syncToLive()" style="background:#28a745; color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer;">Sync Live</button>
             </div>
-            
-            <div class="tab-bar">
-                <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Manage Agenda</button>
-                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Data Analysis</button>
-                <button class="tab-btn" id="btn-tab-logs" onclick="showTab('logs')">Attendance Logs</button>
+            <div class="admin-tabs" style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Agenda</button>
+                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
+                <button class="tab-btn" id="btn-tab-logs" onclick="showTab('logs')">Logs</button>
             </div>
 
             <div id="tab-agenda" class="tab-content">
-                <div class="input-grid admin-meta">
-                    <div class="input-group">
-                        <label>Event Date Display:</label>
-                        <input type="text" id="admin-date-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Portal Status:</label>
-                        <select id="form-status-toggle">
-                            <option value="open">Open (Accepting Responses)</option>
-                            <option value="closed">Closed (View Only)</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="admin-agenda-list" class="admin-list"></div>
-                <button class="btn-outline" onclick="addSession()">+ Add New Session</button>
+                <input type="text" id="admin-date-input" style="width:100%; margin-bottom:10px; padding:8px;">
+                <select id="form-status-toggle" style="width:100%; margin-bottom:15px; padding:10px;">
+                    <option value="open">Portal Open</option>
+                    <option value="closed">Portal Closed</option>
+                </select>
+                <div id="admin-agenda-list"></div>
+                <button onclick="addSession()" style="width:100%; padding:10px; background:#fff; color:#005eb8; border:1px dashed #005eb8; border-radius:8px; cursor:pointer;">+ Add Session</button>
             </div>
 
             <div id="tab-analysis" class="tab-content" style="display:none;">
-                <div class="upload-zone">
-                    <label><strong>Import CSV from Web3Forms:</strong></label>
-                    <input type="file" accept=".csv" onchange="handleFileUpload(event)">
-                </div>
+                <input type="file" accept=".csv" onchange="handleFileUpload(event)" style="margin-bottom:20px;">
                 <textarea id="raw-data-input" style="display:none;"></textarea>
-                <div id="analysis-results" class="results-grid"></div>
+                <div id="analysis-results"></div>
             </div>
 
             <div id="tab-logs" class="tab-content" style="display:none;">
-                <div class="log-controls">
-                    <button class="btn-danger-sm" onclick="clearAllLogs()">Clear All Logs</button>
+                <div style="text-align:right; margin-bottom:10px;">
+                    <button onclick="clearAllLogs()" style="background:#d93025; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Clear All Logs</button>
                 </div>
-                <div id="attendance-log-list" class="log-table"></div>
+                <div id="attendance-log-list"></div>
             </div>
 
-            <button class="btn-logout" onclick="location.reload()">Logout Session</button>
+            <button onclick="location.reload()" style="margin-top:20px; width:100%; background:none; border:none; color:#999; cursor:pointer;">Logout</button>
         </div>
 
-        <div class="admin-trigger" onclick="checkAdmin()">Admin Access</div>
+        <div onclick="checkAdmin()" style="text-align:center; margin-top:30px; color:#ddd; cursor:pointer; font-size:10px;">Admin Login</div>
     </div>
     <script src="app.js"></script>
 </body>
