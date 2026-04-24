@@ -11,7 +11,7 @@ const RATING_COLORS = {
     Poor: '#d93025'
 };
 
-// --- CORE DATA ---
+// --- DATA PERSISTENCE ---
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
     date: "28 April 2026",
@@ -25,63 +25,7 @@ let adminWork = JSON.parse(JSON.stringify(liveData));
 
 window.onload = () => { applyLiveUI(); };
 
-// --- ADMIN LOGIN & UI SWITCH ---
-function checkAdmin() {
-    const pass = prompt("Enter Admin Password:");
-    if (pass === ADMIN_PASS) {
-        document.getElementById('user-view').style.display = 'none';
-        document.getElementById('admin-view').style.display = 'block';
-        loadAdminWorkspace();
-    } else if (pass !== null) {
-        alert("Incorrect Password.");
-    }
-}
-
-function loadAdminWorkspace() {
-    document.getElementById('admin-date-input').value = adminWork.date;
-    document.getElementById('form-status-toggle').value = adminWork.status;
-    renderAdminAgenda();
-    renderLog();
-}
-
-// --- SESSION MANAGEMENT (RESTORED) ---
-function addSession() {
-    adminWork.agenda.push({
-        id: Date.now(),
-        time: "00:00",
-        title: "New Presentation Title",
-        speakers: ["Speaker Name"]
-    });
-    renderAdminAgenda();
-}
-
-function renderAdminAgenda() {
-    const list = document.getElementById('admin-agenda-list');
-    list.innerHTML = "";
-    adminWork.agenda.forEach((item, index) => {
-        list.innerHTML += `
-            <div class="admin-session-box" style="border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:8px; background:#fff;">
-                <div style="display:flex; gap:10px; margin-bottom:5px;">
-                    <input type="text" style="width:70px" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
-                    <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
-                    <button onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()" style="background:#d93025; color:white; border:none; border-radius:4px; cursor:pointer; padding:0 10px;">×</button>
-                </div>
-                <input type="text" placeholder="Speakers (comma separated)" value="${item.speakers.join(', ')}" 
-                       onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())" style="width:100%">
-            </div>`;
-    });
-}
-
-function syncToLive() {
-    adminWork.date = document.getElementById('admin-date-input').value;
-    adminWork.status = document.getElementById('form-status-toggle').value;
-    liveData = JSON.parse(JSON.stringify(adminWork));
-    localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Live Portal Synced!");
-    applyLiveUI();
-}
-
-// --- USER FORM LOGIC ---
+// --- USER FORM FUNCTIONS ---
 function applyLiveUI() {
     document.getElementById('date-display').innerText = liveData.date;
     const formArea = document.getElementById('form-active-area');
@@ -94,7 +38,7 @@ function applyLiveUI() {
         formArea.style.display = 'block';
         closedMsg.style.display = 'none';
     }
-    renderUserForm();
+    renderUserForm(); 
 }
 
 function renderUserForm() {
@@ -103,49 +47,49 @@ function renderUserForm() {
     liveData.agenda.forEach(item => {
         container.innerHTML += `
             <div class="session-card">
-                <div class="session-header" style="background:#002f5c; color:white; padding:10px; display:flex; justify-content:space-between;">
-                    <strong>${item.time} - ${item.title}</strong>
-                    <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
+                <div class="session-header">
+                    <span><strong>${item.time}</strong> - ${item.title}</span>
+                    <label style="font-size:12px;"><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> I didn't attend</label>
                 </div>
-                <div class="session-body" id="body-${item.id}" style="padding:15px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <span>Content Rating: *</span>
+                <div class="session-body" id="body-${item.id}">
+                    <p style="font-size:12px; color:#666; margin-bottom:10px;">Speakers: ${item.speakers.join(', ')}</p>
+                    <div class="rating-row">
+                        <span>Presentation Content: *</span>
                         <select id="r1-${item.id}" required>
                             <option value="">Select...</option>
                             <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
                         </select>
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <span>Delivery Rating: *</span>
+                    <div class="rating-row">
+                        <span>Presentation Delivery: *</span>
                         <select id="r2-${item.id}" required>
                             <option value="">Select...</option>
                             <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
                         </select>
                     </div>
-                    <textarea id="comm-${item.id}" placeholder="Mandatory session comments..." required style="width:100%; height:60px;"></textarea>
+                    <textarea id="comm-${item.id}" placeholder="Specific feedback for this session..." required></textarea>
                 </div>
             </div>`;
     });
 }
 
-function toggleS(id) {
+function toggleS(id) { 
     const isNA = document.getElementById(`na-${id}`).checked;
     const body = document.getElementById(`body-${id}`);
-    body.style.opacity = isNA ? "0.3" : "1";
-    body.style.pointerEvents = isNA ? "none" : "auto";
+    body.classList.toggle('disabled', isNA);
     body.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
 }
 
-// --- SUBMISSION ---
+// --- SUBMISSION LOGIC ---
 async function startProcess() {
     const name = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
     const general = document.getElementById('generalFeedback').value.trim();
 
-    if(!name || !email || !general) return alert("Full Name, Email, and General Feedback are mandatory.");
-
+    if(!name || !email || !general) return alert("Please complete your name, email, and overall feedback.");
+    
     let attended = [];
-    let msg = `GENERAL: ${general}\n\n`;
+    let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
     let error = false;
 
     liveData.agenda.forEach(item => {
@@ -153,22 +97,26 @@ async function startProcess() {
             const r1 = document.getElementById(`r1-${item.id}`).value;
             const r2 = document.getElementById(`r2-${item.id}`).value;
             const cm = document.getElementById(`comm-${item.id}`).value.trim();
+
             if(!r1 || !r2 || !cm) { error = true; return; }
+
             attended.push(item.title);
-            msg += `[${item.title}]\nContent: ${r1}\nDelivery: ${r2}\nComment: ${cm}\n\n`;
+            msg += `SESS_START|${item.title}\nSCORE_C|${r1}\nSCORE_D|${r2}\nCOMMENT|${cm}\nSESS_END\n\n`;
         }
     });
 
-    if(error) return alert("Please fill ratings and comments for all attended sessions.");
-    if(attended.length === 0) return alert("Select at least one session.");
+    if(error) return alert("Please provide ratings and comments for all sessions you attended.");
+    if(attended.length === 0) return alert("Please select at least one session you attended.");
 
+    // Log locally
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = `<h2 style="text-align:center">✓ Thank You</h2><p style="text-align:center">Downloading Certificate...</p>`;
+    document.getElementById('user-view').innerHTML = `<div class="thank-you-msg"><h2>✓ Thank You</h2><p>Feedback submitted. Your certificate is generating...</p></div>`;
 
     await generateCert(name, attended, false);
+    
     fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -176,14 +124,120 @@ async function startProcess() {
     });
 }
 
-// --- LOGS & ANALYSIS ---
+// --- ADMIN FUNCTIONS (RESTORED) ---
+function checkAdmin() {
+    const p = prompt("Admin Password:");
+    if (p === ADMIN_PASS) {
+        document.getElementById('user-view').style.display = 'none';
+        document.getElementById('admin-view').style.display = 'block';
+        loadAdminWorkspace();
+    } else if (p !== null) alert("Access Denied.");
+}
+
+function loadAdminWorkspace() {
+    document.getElementById('admin-date-input').value = adminWork.date;
+    document.getElementById('form-status-toggle').value = adminWork.status;
+    renderAdminAgenda();
+    renderLog();
+}
+
+function addSession() { 
+    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Speaker"] }); 
+    renderAdminAgenda(); 
+}
+
+function renderAdminAgenda() {
+    const list = document.getElementById('admin-agenda-list');
+    list.innerHTML = "";
+    adminWork.agenda.forEach((item, index) => {
+        list.innerHTML += `
+            <div class="admin-session-box" style="border:1px solid #ddd; padding:15px; border-radius:10px; background:#fff; margin-bottom:10px;">
+                <div style="display:flex; gap:10px; margin-bottom:8px;">
+                    <input type="text" style="width:70px" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
+                    <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
+                    <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
+                </div>
+                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speakers (comma separated)" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+            </div>`;
+    });
+}
+
+function syncToLive() {
+    adminWork.date = document.getElementById('admin-date-input').value;
+    adminWork.status = document.getElementById('form-status-toggle').value;
+    liveData = JSON.parse(JSON.stringify(adminWork));
+    localStorage.setItem('ace_live_data', JSON.stringify(liveData));
+    alert("Live Portal Updated!");
+    applyLiveUI();
+}
+
+// --- ANALYSIS & LOGS ---
+function handleFileUpload(e) {
+    const r = new FileReader();
+    r.onload = (f) => { 
+        document.getElementById('raw-data-input').value = f.target.result; 
+        processImportedData(); 
+    };
+    r.readAsText(e.target.files[0]);
+}
+
+function processImportedData() {
+    const raw = document.getElementById('raw-data-input').value;
+    const container = document.getElementById('analysis-results');
+    container.innerHTML = `<div class="analysis-legend"><strong>Legend:</strong> 
+        <span class="l-item"><i style="background:#28a745"></i> Excellent</span>
+        <span class="l-item"><i style="background:#41b6e6"></i> Good</span>
+        <span class="l-item"><i style="background:#ffc107"></i> Satisfactory</span>
+        <span class="l-item"><i style="background:#d93025"></i> Poor</span></div>`;
+
+    liveData.agenda.forEach((session, idx) => {
+        const title = session.title.trim();
+        let cC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
+        let dC = { Excellent: 0, Good: 0, Satisfactory: 0, Poor: 0 };
+        let comms = [];
+
+        const blocks = raw.split('SESS_START|');
+        blocks.forEach(block => {
+            if (block.includes(title)) {
+                const cM = block.match(/SCORE_C\|(Excellent|Good|Satisfactory|Poor)/i);
+                if (cM) cC[cap(cM[1])]++;
+                const dM = block.match(/SCORE_D\|(Excellent|Good|Satisfactory|Poor)/i);
+                if (dM) dC[cap(dM[1])]++;
+                const comM = block.match(/COMMENT\|(.*?)(?=\n|SESS_END)/);
+                if (comM && comM[1].trim().length > 1) comms.push(comM[1].trim());
+            }
+        });
+
+        const card = document.createElement('div');
+        card.className = 'analysis-card';
+        card.innerHTML = `<h4>${session.title}</h4><div class="dual-chart-row">
+            <div class="chart-item"><canvas id="c-${idx}" width="130" height="130"></canvas><div class="vote-count">${sum(cC)} Responses</div><p>Content</p></div>
+            <div class="chart-item"><canvas id="d-${idx}" width="130" height="130"></canvas><div class="vote-count">${sum(dC)} Responses</div><p>Delivery</p></div>
+            <div class="comments-preview"><b>Session Comments:</b><br>${comms.map(c=>`• ${c}`).join('<br>') || 'No comments.'}</div></div>`;
+        container.appendChild(card);
+        renderD(idx, 'c', cC); renderD(idx, 'd', dC);
+    });
+}
+
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+const sum = (obj) => Object.values(obj).reduce((a, b) => a + b, 0);
+
+function renderD(idx, type, v) {
+    const has = sum(v) > 0;
+    new Chart(document.getElementById(`${type}-${idx}`), {
+        type: 'doughnut',
+        data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
+        options: { responsive: false, plugins: { legend: { display: false } }, cutout: '70%' }
+    });
+}
+
 function renderLog() {
     const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     const container = document.getElementById('attendance-log-list');
     container.innerHTML = logs.reverse().map((l, i) => `
-        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-            <span>${l.name}</span>
-            <button onclick="regenerateFromLog(${logs.length - 1 - i})" style="cursor:pointer">PDF</button>
+        <div class="log-entry">
+            <span><strong>${l.name}</strong> (${l.email})</span>
+            <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
         </div>`).join('');
 }
 
@@ -200,7 +254,7 @@ function showTab(t) {
     document.getElementById(`btn-tab-${t}`).classList.add('active');
 }
 
-// --- PDF ENGINE ---
+// --- PDF GENERATOR ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
@@ -220,5 +274,5 @@ async function generateCert(name, detail, isSpeaker) {
         detail.forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
     }
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name}_Cert.pdf`);
+    doc.save(`${name}_Certificate.pdf`);
 }
