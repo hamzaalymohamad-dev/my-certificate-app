@@ -13,52 +13,33 @@
     <div class="card">
         <div class="header-section">
             <div class="logo-row">
-                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo" alt="Bee Logo">
-                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo" alt="MFT Logo">
+                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo">
+                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
             </div>
             <h2>Critical Care ACE Day</h2>
-            <p class="subtitle">Audit, Case-based discussion & Evidence</p>
-            <div id="date-display" style="color:#005eb8; font-weight:bold; margin-top:5px;">-- April 2026 --</div>
+            <div id="date-display" style="color:#005eb8; font-weight:bold;">-- April 2026 --</div>
         </div>
 
         <hr>
 
         <div id="user-view">
-            <div id="form-closed-msg" style="display:none; text-align:center; padding: 40px;">
-                <h3 style="color: #d93025;">Portal Closed</h3>
-                <p>The feedback form is currently inactive.</p>
-            </div>
-
+            <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Form Closed</h3></div>
             <div id="form-active-area">
                 <div class="form-row">
-                    <div style="flex:1">
-                        <label>Full Name *</label>
-                        <input type="text" id="userName" placeholder="For your certificate" required>
-                    </div>
-                    <div style="flex:1">
-                        <label>Email Address *</label>
-                        <input type="email" id="userEmail" placeholder="To receive a copy" required>
-                    </div>
+                    <input type="text" id="userName" placeholder="Full Name *" required>
+                    <input type="email" id="userEmail" placeholder="Email Address *" required>
                 </div>
-
-                <div id="sessions-container">
-                    </div>
-
-                <div style="margin-top:20px;">
-                    <label><strong>Overall Event Feedback *</strong></label>
-                    <textarea id="generalFeedback" placeholder="How did you find the day overall? Any suggestions for future topics?" required></textarea>
-                </div>
-
-                <button class="btn-primary" onclick="startProcess()" style="margin-top:20px;">Submit Feedback & Download Certificate</button>
+                <div id="sessions-container"></div>
+                <textarea id="generalFeedback" placeholder="Overall Feedback... *" required></textarea>
+                <button class="btn-primary" onclick="startProcess()" style="margin-top:20px;">Submit & Download Certificate</button>
             </div>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
-                <span><strong>Admin Dashboard</strong></span>
-                <button class="btn-sync" onclick="syncToLive()">Sync to Live Portal</button>
+                <span><strong>Admin Panel</strong></span>
+                <button class="btn-sync" onclick="syncToLive()">Sync Live</button>
             </div>
-
             <div class="admin-tabs">
                 <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Agenda</button>
                 <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
@@ -66,42 +47,26 @@
             </div>
 
             <div id="tab-agenda" class="tab-content">
-                <div class="form-row">
-                    <div style="flex:1">
-                        <label>Event Date:</label>
-                        <input type="text" id="admin-date-input">
-                    </div>
-                    <div style="flex:1">
-                        <label>Portal Status:</label>
-                        <select id="form-status-toggle">
-                            <option value="open">Open</option>
-                            <option value="closed">Closed</option>
-                        </select>
-                    </div>
-                </div>
+                <input type="text" id="admin-date-input" style="margin-bottom:10px;">
+                <select id="form-status-toggle" style="margin-bottom:15px;"><option value="open">Open</option><option value="closed">Closed</option></select>
                 <div id="admin-agenda-list"></div>
-                <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
+                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
 
             <div id="tab-analysis" class="tab-content" style="display:none;">
-                <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd;">
-                    <label><strong>Import CSV Results:</strong></label>
-                    <input type="file" accept=".csv" onchange="handleFileUpload(event)" style="margin-top:10px;">
-                    <textarea id="raw-data-input" style="display:none;"></textarea>
-                </div>
+                <input type="file" accept=".csv" onchange="handleFileUpload(event)">
+                <textarea id="raw-data-input" style="display:none;"></textarea>
                 <div id="analysis-results"></div>
             </div>
 
             <div id="tab-logs" class="tab-content" style="display:none;">
-                <div id="attendance-log-list" style="background:#fff; border:1px solid #eee; border-radius:8px;"></div>
+                <div id="attendance-log-list"></div>
             </div>
-
-            <button class="btn-sec" style="margin-top:20px; border-color:#ccc; color:#666;" onclick="location.reload()">Logout Admin</button>
+            <button class="btn-sec" style="color:#999;" onclick="location.reload()">Logout</button>
         </div>
 
         <div class="footer-login" onclick="checkAdmin()">Admin Login</div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
