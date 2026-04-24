@@ -1,27 +1,25 @@
-body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; padding: 20px; color: #333; position: relative; }
+body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; padding: 20px; color: #333; }
 .watermark-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png') no-repeat center; background-size: 60%; opacity: 0.04; z-index: -1; pointer-events: none; }
 .card { background: rgba(255, 255, 255, 0.96); max-width: 850px; margin: 0 auto; padding: 30px; border-radius: 15px; border-top: 10px solid #005eb8; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); }
 .header-section { text-align: center; margin-bottom: 25px; }
 .logo-row { display: flex; justify-content: space-between; align-items: center; }
 .trust-logo { height: 45px; } .bee-logo { height: 55px; }
-h2 { color: #002f5c; margin: 10px 0; }
-.subtitle { color: #005eb8; font-weight: 600; }
+h2 { color: #002f5c; margin: 10px 0; } .subtitle { color: #005eb8; font-weight: 600; }
 
 .form-row { display: flex; gap: 15px; margin: 20px 0; }
-.form-group { flex: 1; }
 input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-textarea { height: 70px; margin-top: 10px; }
+textarea { height: 75px; margin-top: 10px; }
 
 .session-card { border: 1px solid #e1e8ed; border-radius: 12px; margin-bottom: 15px; background: #fff; overflow: hidden; }
 .session-header { background: #002f5c; color: white; padding: 12px 18px; display: flex; justify-content: space-between; }
 .session-body { padding: 15px; }
 .session-body.disabled { opacity: 0.3; pointer-events: none; background: #f9f9f9; }
 .rating-row { display: flex; justify-content: space-between; align-items: center; background: #f8fafd; padding: 8px; border-radius: 8px; margin-bottom: 8px; }
-.rating-row span { font-weight: bold; font-size: 13px; }
 .rating-row select { width: 140px; }
 
-.btn-primary { width: 100%; background: #005eb8; color: white; padding: 16px; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-.btn-sync { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.btn-primary { width: 100%; background: #005eb8; color: white; padding: 16px; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+.btn-sec { width: 100%; background: #fff; color: #005eb8; border: 2px dashed #005eb8; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+.btn-sync { background: #28a745; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; }
 .btn-del { background: #d93025; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
 .admin-header-bar { background: #002f5c; color: white; padding: 10px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -39,7 +37,7 @@ textarea { height: 70px; margin-top: 10px; }
 .l-item i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
 .analysis-card { border: 1px solid #eee; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
 .dual-chart-row { display: flex; gap: 20px; flex-wrap: wrap; }
-.chart-item { text-align: center; font-size: 11px; width: 140px; font-weight: bold; color: #005eb8; position: relative; }
+.chart-item { text-align: center; font-size: 11px; width: 140px; font-weight: bold; color: #005eb8; }
 .vote-count { font-size: 10px; color: #666; margin-top: 4px; }
 .comments-preview { flex: 1; background: #f9f9f9; padding: 12px; border-radius: 8px; font-size: 12px; border-left: 4px solid #28a745; max-height: 150px; overflow-y: auto; }
 
