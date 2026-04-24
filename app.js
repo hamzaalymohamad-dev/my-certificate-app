@@ -1,3 +1,8 @@
+/**
+ * Critical Care ACE Day - ULTIMATE CONSOLIDATED LOGIC
+ * Includes: Admin Login, Add Session, Mandatory Fields, & Anchor-Parser
+ */
+
 const ACCESS_KEY = "d0491ab4-b81b-43f5-9341-10a60a6309fe";
 const ADMIN_PASS = "Aly2026";
 const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png";
@@ -11,7 +16,7 @@ const RATING_COLORS = {
     Poor: '#d93025'
 };
 
-// --- DATA PERSISTENCE ---
+// --- DATA INITIALIZATION ---
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open",
     date: "28 April 2026",
@@ -25,7 +30,7 @@ let adminWork = JSON.parse(JSON.stringify(liveData));
 
 window.onload = () => { applyLiveUI(); };
 
-// --- USER INTERFACE ---
+// --- USER UI LOGIC ---
 function applyLiveUI() {
     document.getElementById('date-display').innerText = liveData.date;
     const formArea = document.getElementById('form-active-area');
@@ -85,11 +90,11 @@ async function startProcess() {
     const email = document.getElementById('userEmail').value.trim();
     const general = document.getElementById('generalFeedback').value.trim();
 
-    if(!name || !email || !general) return alert("Please complete Name, Email, and Overall Feedback.");
+    if(!name || !email || !general) return alert("Full Name, Email, and Overall Feedback are mandatory.");
     
     let attended = [];
     let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
-    let incomplete = false;
+    let validationFailed = false;
 
     liveData.agenda.forEach(item => {
         if(!document.getElementById(`na-${item.id}`).checked) {
@@ -97,21 +102,21 @@ async function startProcess() {
             const r2 = document.getElementById(`r2-${item.id}`).value;
             const cm = document.getElementById(`comm-${item.id}`).value.trim();
 
-            if(!r1 || !r2 || !cm) { incomplete = true; return; }
+            if(!r1 || !r2 || !cm) { validationFailed = true; return; }
 
             attended.push(item.title);
             msg += `SESS_START|${item.title}\nSCORE_C|${r1}\nSCORE_D|${r2}\nCOMMENT|${cm}\nSESS_END\n\n`;
         }
     });
 
-    if(incomplete) return alert("All fields for attended sessions are mandatory.");
-    if(attended.length === 0) return alert("Please select at least one session.");
+    if(validationFailed) return alert("All fields (ratings and comments) are mandatory for attended sessions.");
+    if(attended.length === 0) return alert("Please provide feedback for at least one session.");
 
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = `<div class="thank-you-msg"><h2>✓ Submitted</h2><p>Your certificate is downloading.</p></div>`;
+    document.getElementById('user-view').innerHTML = `<div class="thank-you-msg"><h2>✓ Success</h2><p>Your certificate is downloading now.</p></div>`;
 
     await generateCert(name, attended, false);
     fetch("https://api.web3forms.com/submit", {
@@ -121,12 +126,15 @@ async function startProcess() {
     });
 }
 
-// --- ADMIN CONTROLS ---
+// --- RESTORED ADMIN LOGIN & LOGIC ---
 function checkAdmin() {
-    if (prompt("Password:") === ADMIN_PASS) {
+    const pass = prompt("Enter Admin Password:");
+    if (pass === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         loadAdminWorkspace();
+    } else if (pass !== null) {
+        alert("Incorrect Password.");
     }
 }
 
@@ -153,7 +161,7 @@ function renderAdminAgenda() {
                     <input type="text" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
                     <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
                 </div>
-                <input type="text" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speaker Names" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
             </div>`;
     });
 }
@@ -163,11 +171,27 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Updated Live Portal.");
+    alert("Live Portal Updated Successfully!");
     applyLiveUI();
 }
 
-// --- ANALYSIS ENGINE ---
+// --- RESTORED LOGS & ANALYSIS ---
+function renderLog() {
+    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    const container = document.getElementById('attendance-log-list');
+    container.innerHTML = logs.reverse().map((l, i) => `
+        <div class="log-entry">
+            <span><strong>${l.name}</strong></span>
+            <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
+        </div>`).join('');
+}
+
+function regenerateFromLog(idx) {
+    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    const r = logs[idx];
+    if(r) generateCert(r.name, r.sessions, false);
+}
+
 function handleFileUpload(e) {
     const r = new FileReader();
     r.onload = (f) => { document.getElementById('raw-data-input').value = f.target.result; processImportedData(); };
@@ -214,6 +238,7 @@ function processImportedData() {
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 const sum = (obj) => Object.values(obj).reduce((a, b) => a + b, 0);
+
 function renderD(idx, type, v) {
     const has = sum(v) > 0;
     new Chart(document.getElementById(`${type}-${idx}`), {
@@ -223,19 +248,6 @@ function renderD(idx, type, v) {
     });
 }
 
-// --- LOGS & PDF ---
-function renderLog() {
-    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-    const container = document.getElementById('attendance-log-list');
-    container.innerHTML = logs.reverse().map((l, i) => `<div class="log-entry"><span>${l.name}</span><button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button></div>`).join('');
-}
-
-function regenerateFromLog(idx) {
-    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-    const r = logs[idx];
-    if(r) generateCert(r.name, r.sessions, false);
-}
-
 function showTab(t) {
     document.querySelectorAll('.tab-content').forEach(c => c.style.display='none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -243,6 +255,7 @@ function showTab(t) {
     document.getElementById(`btn-tab-${t}`).classList.add('active');
 }
 
+// --- PDF CERTIFICATE GENERATOR ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
@@ -262,5 +275,5 @@ async function generateCert(name, detail, isSpeaker) {
         detail.forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
     }
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name}_Cert.pdf`);
+    doc.save(`${name}_Certificate.pdf`);
 }
