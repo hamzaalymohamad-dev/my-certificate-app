@@ -17,7 +17,8 @@
                 <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
             </div>
             <h2>Critical Care ACE Day</h2>
-            <div id="date-display" style="color:#005eb8; font-weight:bold;">-- April 2026 --</div>
+            <p style="margin: 0; color: #666; font-weight: bold; text-transform: uppercase; font-size: 14px;">Feedback & Certification Form</p>
+            <div id="date-display" style="color:#005eb8; font-weight:bold; margin-top: 5px;">-- April 2026 --</div>
         </div>
 
         <hr>
@@ -30,14 +31,14 @@
                     <input type="email" id="userEmail" placeholder="Email Address *" required>
                 </div>
                 <div id="sessions-container"></div>
-                <textarea id="generalFeedback" placeholder="Overall Feedback... *" required></textarea>
+                <textarea id="generalFeedback" placeholder="Overall Event Feedback... *" required></textarea>
                 <button class="btn-primary" onclick="startProcess()" style="margin-top:20px;">Submit & Download Certificate</button>
             </div>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
-                <span><strong>Admin Panel</strong></span>
+                <span><strong>Admin Management</strong></span>
                 <button class="btn-sync" onclick="syncToLive()">Sync Live</button>
             </div>
             <div class="admin-tabs">
@@ -48,10 +49,7 @@
 
             <div id="tab-agenda" class="tab-content">
                 <input type="text" id="admin-date-input" style="margin-bottom:10px;">
-                <select id="form-status-toggle" style="margin-bottom:15px;">
-                    <option value="open">Open</option>
-                    <option value="closed">Closed</option>
-                </select>
+                <select id="form-status-toggle" style="margin-bottom:15px;"><option value="open">Open</option><option value="closed">Closed</option></select>
                 <div id="admin-agenda-list"></div>
                 <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
