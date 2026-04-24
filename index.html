@@ -17,29 +17,29 @@
                 <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
             </div>
             <h2>Critical Care ACE Day</h2>
-            <p style="margin: 0; color: #666; font-weight: bold; text-transform: uppercase; font-size: 14px;">Feedback & Certification Form</p>
-            <div id="date-display" style="color:#005eb8; font-weight:bold; margin-top: 5px;">-- April 2026 --</div>
+            <p class="form-subtitle">Feedback & Certification Form</p>
+            <div id="date-display" class="date-header">-- April 2026 --</div>
         </div>
 
         <hr>
 
         <div id="user-view">
-            <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Form Closed</h3></div>
+            <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Portal Closed</h3></div>
             <div id="form-active-area">
                 <div class="form-row">
                     <input type="text" id="userName" placeholder="Full Name *" required>
                     <input type="email" id="userEmail" placeholder="Email Address *" required>
                 </div>
                 <div id="sessions-container"></div>
-                <textarea id="generalFeedback" placeholder="Overall Event Feedback... *" required></textarea>
-                <button class="btn-primary" onclick="startProcess()" style="margin-top:20px;">Submit & Download Certificate</button>
+                <textarea id="generalFeedback" placeholder="Overall Event Feedback & Suggestions... *" required></textarea>
+                <button class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
             </div>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
                 <span><strong>Admin Management</strong></span>
-                <button class="btn-sync" onclick="syncToLive()">Sync Live</button>
+                <button class="btn-sync" onclick="syncToLive()">Sync Changes</button>
             </div>
             <div class="admin-tabs">
                 <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Agenda</button>
@@ -48,8 +48,11 @@
             </div>
 
             <div id="tab-agenda" class="tab-content">
-                <input type="text" id="admin-date-input" style="margin-bottom:10px;">
-                <select id="form-status-toggle" style="margin-bottom:15px;"><option value="open">Open</option><option value="closed">Closed</option></select>
+                <input type="text" id="admin-date-input" placeholder="Event Date">
+                <select id="form-status-toggle">
+                    <option value="open">Portal Open</option>
+                    <option value="closed">Portal Closed</option>
+                </select>
                 <div id="admin-agenda-list"></div>
                 <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
