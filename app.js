@@ -36,7 +36,7 @@ function renderUserForm() {
             <div class="session-body" id="body-${item.id}">
                 <div class="rating-row"><span>Content:</span><select id="r1-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
                 <div class="rating-row"><span>Delivery:</span><select id="r2-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                <textarea id="comm-${item.id}" placeholder="Comments required..." required></textarea>
+                <textarea id="comm-${item.id}" placeholder="Mandatory comments..." required></textarea>
             </div>
         </div>`).join('');
 }
@@ -80,7 +80,7 @@ async function startProcess() {
     fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) });
 }
 
-// --- ADMIN LOGIC ---
+// --- ADMIN ---
 function checkAdmin() {
     if (prompt("Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
@@ -110,9 +110,11 @@ function renderAdminAgenda() {
                 <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
                 <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
             </div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" style="flex:1" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
-                <button onclick="generateCert('${item.speakers[0]}', '${item.title}', true)" class="btn-mini">Speaker PDF</button>
+            <div style="display:flex; gap:5px; flex-wrap: wrap;">
+                <input type="text" style="flex:1; min-width: 200px;" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <div style="display:flex; gap:5px;">
+                    ${item.speakers.map(s => `<button onclick="generateCert('${s}', '${item.title}', true)" class="btn-mini">Cert: ${s}</button>`).join('')}
+                </div>
             </div>
         </div>`).join('');
 }
@@ -186,9 +188,9 @@ function processImportedData() {
         const card = document.createElement('div');
         card.className = 'analysis-card';
         card.innerHTML = `<h4>${session.title}</h4><div class="analysis-row">
-            <canvas id="c-${idx}" width="120" height="120"></canvas>
-            <canvas id="d-${idx}" width="120" height="120"></canvas>
-            <div class="com-box"><b>Comments:</b><br>${comms.join('<br>• ')}</div>
+            <div class="chart-box"><canvas id="c-${idx}"></canvas></div>
+            <div class="chart-box"><canvas id="d-${idx}"></canvas></div>
+            <div class="com-box"><b>Comments:</b><br>${comms.join('<br>• ') || 'None'}</div>
         </div>`;
         container.appendChild(card);
         renderD(idx, 'c', cC); renderD(idx, 'd', dC);
@@ -201,7 +203,12 @@ function renderD(idx, type, v) {
     new Chart(document.getElementById(`${type}-${idx}`), {
         type: 'doughnut',
         data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
-        options: { plugins: { legend: { display: false } }, cutout: '75%' }
+        options: { 
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } }, 
+            cutout: '70%' 
+        }
     });
 }
 
@@ -231,5 +238,5 @@ async function generateCert(name, detail, isSpeaker) {
         detail.forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
     }
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name}_Cert.pdf`);
+    doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
 }
