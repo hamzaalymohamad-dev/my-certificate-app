@@ -11,10 +11,10 @@
 <body>
     <div class="watermark-bg"></div>
     <div class="card">
-        <div class="header-section" style="text-align:center;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" style="height:50px;">
-                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" style="height:40px;">
+        <div class="header-section">
+            <div class="logo-row">
+                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo">
+                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
             </div>
             <h2>Critical Care ACE Day</h2>
             <div id="date-display" style="color:#005eb8; font-weight:bold;">-- April 2026 --</div>
@@ -25,52 +25,47 @@
         <div id="user-view">
             <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Form Closed</h3></div>
             <div id="form-active-area">
-                <input type="text" id="userName" placeholder="Full Name *" style="width:100%; padding:10px; margin-bottom:10px;">
-                <input type="email" id="userEmail" placeholder="Email Address *" style="width:100%; padding:10px; margin-bottom:10px;">
+                <div class="form-row">
+                    <input type="text" id="userName" placeholder="Full Name *" required>
+                    <input type="email" id="userEmail" placeholder="Email Address *" required>
+                </div>
                 <div id="sessions-container"></div>
-                <textarea id="generalFeedback" placeholder="Overall Feedback... *" style="width:100%; padding:10px; height:80px;"></textarea>
-                <button onclick="startProcess()" style="width:100%; padding:15px; background:#005eb8; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:20px;">Submit & Download Certificate</button>
+                <textarea id="generalFeedback" placeholder="Overall Feedback... *" required></textarea>
+                <button class="btn-primary" onclick="startProcess()" style="margin-top:20px;">Submit & Download Certificate</button>
             </div>
         </div>
 
         <div id="admin-view" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#eee; padding:10px; border-radius:8px; margin-bottom:15px;">
-                <strong>Admin Panel</strong>
-                <button onclick="syncToLive()" style="background:#28a745; color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer;">Sync Live</button>
+            <div class="admin-header-bar">
+                <span><strong>Admin Panel</strong></span>
+                <button class="btn-sync" onclick="syncToLive()">Sync Live</button>
             </div>
-            <div class="admin-tabs" style="display:flex; gap:10px; margin-bottom:20px;">
+            <div class="admin-tabs">
                 <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Agenda</button>
                 <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
                 <button class="tab-btn" id="btn-tab-logs" onclick="showTab('logs')">Logs</button>
             </div>
 
             <div id="tab-agenda" class="tab-content">
-                <input type="text" id="admin-date-input" style="width:100%; margin-bottom:10px; padding:8px;">
-                <select id="form-status-toggle" style="width:100%; margin-bottom:15px; padding:10px;">
-                    <option value="open">Portal Open</option>
-                    <option value="closed">Portal Closed</option>
-                </select>
+                <input type="text" id="admin-date-input" style="margin-bottom:10px;">
+                <select id="form-status-toggle" style="margin-bottom:15px;"><option value="open">Open</option><option value="closed">Closed</option></select>
                 <div id="admin-agenda-list"></div>
-                <button onclick="addSession()" style="width:100%; padding:10px; background:#fff; color:#005eb8; border:1px dashed #005eb8; border-radius:8px; cursor:pointer;">+ Add Session</button>
+                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
 
             <div id="tab-analysis" class="tab-content" style="display:none;">
-                <input type="file" accept=".csv" onchange="handleFileUpload(event)" style="margin-bottom:20px;">
+                <input type="file" accept=".csv" onchange="handleFileUpload(event)">
                 <textarea id="raw-data-input" style="display:none;"></textarea>
                 <div id="analysis-results"></div>
             </div>
 
             <div id="tab-logs" class="tab-content" style="display:none;">
-                <div style="text-align:right; margin-bottom:10px;">
-                    <button onclick="clearAllLogs()" style="background:#d93025; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Clear All Logs</button>
-                </div>
                 <div id="attendance-log-list"></div>
             </div>
-
-            <button onclick="location.reload()" style="margin-top:20px; width:100%; background:none; border:none; color:#999; cursor:pointer;">Logout</button>
+            <button class="btn-sec" style="color:#999;" onclick="location.reload()">Logout</button>
         </div>
 
-        <div onclick="checkAdmin()" style="text-align:center; margin-top:30px; color:#ddd; cursor:pointer; font-size:10px;">Admin Login</div>
+        <div class="footer-login" onclick="checkAdmin()">Admin Login</div>
     </div>
     <script src="app.js"></script>
 </body>
