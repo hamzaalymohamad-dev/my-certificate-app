@@ -34,9 +34,9 @@ function renderUserForm() {
                 <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
             </div>
             <div class="session-body" id="body-${item.id}">
-                <div class="rating-row"><span>Content:</span><select id="r1-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                <div class="rating-row"><span>Delivery:</span><select id="r2-${item.id}" required><option value="">Select...</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                <textarea id="comm-${item.id}" placeholder="Mandatory comments..." required></textarea>
+                <div class="rating-row"><span>Content Quality:</span><select id="r1-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
+                <div class="rating-row"><span>Speaker Delivery:</span><select id="r2-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
+                <textarea id="comm-${item.id}" placeholder="Please share your thoughts on this session..." required></textarea>
             </div>
         </div>`).join('');
 }
@@ -52,10 +52,10 @@ async function startProcess() {
     const name = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
     const general = document.getElementById('generalFeedback').value.trim();
-    if(!name || !email || !general) return alert("Fill all fields.");
+    if(!name || !email || !general) return alert("Please fill Name, Email, and Overall Feedback.");
 
     let attended = [];
-    let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
+    let msg = `GENERAL: ${general}\n\n`;
     let err = false;
 
     liveData.agenda.forEach(item => {
@@ -69,13 +69,13 @@ async function startProcess() {
         }
     });
 
-    if(err || attended.length === 0) return alert("Complete attended sessions.");
+    if(err || attended.length === 0) return alert("Please complete feedback for attended sessions.");
 
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center;'>Submitted. Downloading Certificate...</h2>";
+    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center;'>Thank You! Downloading Certificate...</h2>";
     await generateCert(name, attended, false);
     fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) });
 }
@@ -97,26 +97,33 @@ function loadAdminWorkspace() {
 }
 
 function addSession() {
-    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Session", speakers: ["Speaker"] });
+    adminWork.agenda.push({ id: Date.now(), time: "00:00", title: "New Presentation", speakers: ["Speaker Name"] });
     renderAdminAgenda();
 }
 
 function renderAdminAgenda() {
     const list = document.getElementById('admin-agenda-list');
-    list.innerHTML = adminWork.agenda.map((item, index) => `
+    list.innerHTML = adminWork.agenda.map((item, index) => {
+        // Individual Buttons Logic
+        const speakerButtons = item.speakers.map(s => 
+            `<button onclick="generateCert('${s.trim()}', '${item.title}', true)" class="btn-mini">Cert: ${s.trim()}</button>`
+        ).join('');
+
+        return `
         <div class="admin-item-box">
             <div style="display:flex; gap:10px; margin-bottom:5px;">
                 <input type="text" style="width:70px" value="${item.time}" onchange="adminWork.agenda[${index}].time=this.value">
                 <input type="text" style="flex:1" value="${item.title}" onchange="adminWork.agenda[${index}].title=this.value">
                 <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
             </div>
-            <div style="display:flex; gap:5px; flex-wrap: wrap;">
-                <input type="text" style="flex:1; min-width: 200px;" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
-                <div style="display:flex; gap:5px;">
-                    ${item.speakers.map(s => `<button onclick="generateCert('${s}', '${item.title}', true)" class="btn-mini">Cert: ${s}</button>`).join('')}
+            <div style="display:flex; gap:10px; flex-direction: column;">
+                <input type="text" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <div style="display:flex; gap:5px; flex-wrap: wrap;">
+                    ${speakerButtons}
                 </div>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 
 function syncToLive() {
@@ -124,7 +131,7 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Synced!");
+    alert("Live Portal Updated!");
     applyLiveUI();
 }
 
@@ -142,7 +149,7 @@ function renderLog() {
 }
 
 function deleteSingleLog(idx) {
-    if(!confirm("Delete this log?")) return;
+    if(!confirm("Delete this entry?")) return;
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.splice(idx, 1);
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
@@ -150,7 +157,7 @@ function deleteSingleLog(idx) {
 }
 
 function clearAllLogs() {
-    if(!confirm("Clear ALL records?")) return;
+    if(!confirm("Wipe all logs?")) return;
     localStorage.removeItem('ace_attendance_log');
     renderLog();
 }
