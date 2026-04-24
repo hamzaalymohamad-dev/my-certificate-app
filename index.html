@@ -5,106 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Critical Care ACE Day Portal</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
-    <div class="watermark-bg"></div>
-
-    <div class="card" id="main-card">
-        
+    <div class="card">
         <div class="header-section">
             <div class="logo-row">
-                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" alt="Bee Logo" class="bee-logo">
-                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" alt="MFT Logo" class="trust-logo">
+                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo">
+                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
             </div>
             <h2>Critical Care ACE Day</h2>
-            <p class="subtitle">Feedback & Certification Portal</p>
-            <div class="event-date-display" id="date-display">-- April 2026 --</div>
+            <div id="date-display" style="color:#005eb8; font-weight:bold;">-- April 2026 --</div>
         </div>
 
-        <hr>
-
         <div id="user-view">
-            <div id="form-closed-msg" style="display:none; text-align:center; padding: 40px;">
-                <h3 style="color: #d93025;">Portal Closed</h3>
-                <p>The feedback form for this session is currently inactive.</p>
-            </div>
-
+            <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Form Currently Closed</h3></div>
             <div id="form-active-area">
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="userName" placeholder="As it should appear on certificate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address *</label>
-                        <input type="email" id="userEmail" placeholder="To receive a copy" required>
-                    </div>
+                    <input type="text" id="userName" placeholder="Full Name for Certificate *" required>
+                    <input type="email" id="userEmail" placeholder="Email Address *" required>
                 </div>
-
-                <div id="sessions-container">
-                    </div>
-
-                <div class="form-group" style="margin-top:20px;">
-                    <label>Overall Feedback / Suggestions *</label>
-                    <textarea id="generalFeedback" placeholder="How was the day overall?" required></textarea>
-                </div>
-
-                <button class="btn-primary" onclick="startProcess()">Submit Feedback & Download Certificate</button>
+                <div id="sessions-container"></div>
+                <textarea id="generalFeedback" placeholder="Overall Feedback on the event... *" required></textarea>
+                <button class="btn-primary" onclick="startProcess()" style="margin-top:20px;">Submit & Download Certificate</button>
             </div>
         </div>
 
         <div id="admin-view" style="display:none;">
             <div class="admin-header-bar">
-                <span><strong>Admin Dashboard</strong></span>
-                <button class="btn-sync" onclick="syncToLive()">Sync to Live Portal</button>
+                <span>Admin Panel</span>
+                <button class="btn-sync" onclick="syncToLive()">Sync to Live</button>
             </div>
-
             <div class="admin-tabs">
-                <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Manage Agenda</button>
-                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Data Analysis</button>
-                <button class="tab-btn" id="btn-tab-logs" onclick="showTab('logs')">Attendance Logs</button>
+                <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Agenda</button>
+                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
+                <button class="tab-btn" id="btn-tab-logs" onclick="showTab('logs')">Logs</button>
             </div>
-
             <div id="tab-agenda" class="tab-content">
-                <div class="admin-row">
-                    <label>Event Date:</label>
-                    <input type="text" id="admin-date-input">
-                    <select id="form-status-toggle">
-                        <option value="open">Portal Open</option>
-                        <option value="closed">Portal Closed</option>
-                    </select>
-                </div>
-                <div id="admin-agenda-list">
-                    </div>
-                <button class="btn-sec" onclick="addSession()">+ Add New Session</button>
+                <input type="text" id="admin-date-input" style="margin-bottom:10px;">
+                <select id="form-status-toggle" style="margin-bottom:15px;">
+                    <option value="open">Portal Open</option>
+                    <option value="closed">Portal Closed</option>
+                </select>
+                <div id="admin-agenda-list"></div>
+                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
             </div>
-
             <div id="tab-analysis" class="tab-content" style="display:none;">
-                <div style="background:#f0f4f8; padding:15px; border-radius:8px; margin-bottom:20px;">
-                    <label><strong>Import Web3Forms CSV:</strong></label>
-                    <input type="file" accept=".csv" onchange="handleFileUpload(event)" style="margin-top:10px;">
-                    <textarea id="raw-data-input" style="display:none;"></textarea>
-                </div>
-                <div id="analysis-results">
-                    <p style="text-align:center; color:#666;">Upload a CSV to view visual feedback metrics.</p>
-                </div>
+                <input type="file" accept=".csv" onchange="handleFileUpload(event)">
+                <textarea id="raw-data-input" style="display:none;"></textarea>
+                <div id="analysis-results" style="margin-top:20px;"></div>
             </div>
-
             <div id="tab-logs" class="tab-content" style="display:none;">
-                <div class="log-container" id="attendance-log-list">
-                    </div>
+                <div id="attendance-log-list" style="background:#fff; border-radius:8px;"></div>
             </div>
-
-            <button class="btn-sec" style="margin-top:20px; border-color:#ccc; color:#666;" onclick="location.reload()">Exit Admin Mode</button>
+            <button class="btn-sec" style="color:#999; border-color:#eee;" onclick="location.reload()">Logout</button>
         </div>
 
         <div class="footer-login" onclick="checkAdmin()">Admin Login</div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
