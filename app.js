@@ -1,3 +1,9 @@
+// To CLOSE the portal for everyone, change "open" to "closed" here:
+let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
+    status: "closed", 
+    date: "28 April 2026",
+    // ... rest of code
+    
 const ACCESS_KEY = "d0491ab4-b81b-43f5-9341-10a60a6309fe";
 const ADMIN_PASS = "Aly2026";
 const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png";
