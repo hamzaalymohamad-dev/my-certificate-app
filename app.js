@@ -6,7 +6,6 @@ const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
 const RATING_COLORS = { Excellent: '#28a745', Good: '#41b6e6', Satisfactory: '#ffc107', Poor: '#d93025' };
 
-// --- MASTER DATA: HARDCODED FOR GLOBAL SYNC ---
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open", 
     date: "28 April 2026",
@@ -38,9 +37,9 @@ function renderUserForm() {
                 <label><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
             </div>
             <div class="session-body" id="body-${item.id}">
-                <div class="rating-row"><span>Content Quality:</span><select id="r1-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                <div class="rating-row"><span>Speaker Delivery:</span><select id="r2-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
-                <textarea id="comm-${item.id}" placeholder="Please share your thoughts on this session..." required></textarea>
+                <div class="rating-row"><span>Content:</span><select id="r1-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
+                <div class="rating-row"><span>Delivery:</span><select id="r2-${item.id}" required><option value="">- Select -</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select></div>
+                <textarea id="comm-${item.id}" placeholder="Comments..." required></textarea>
             </div>
         </div>`).join('');
 }
@@ -52,12 +51,11 @@ function toggleS(id) {
     b.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
 }
 
-// OPTIMIZED PROCESS: CERTIFICATE FIRST, EMAIL SECOND
 async function startProcess() {
     const name = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
     const general = document.getElementById('generalFeedback').value.trim();
-    if(!name || !email || !general) return alert("Please fill Name, Email, and Overall Feedback.");
+    if(!name || !email || !general) return alert("Please fill Name, Email, and Feedback.");
 
     let attended = [];
     let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
@@ -74,40 +72,30 @@ async function startProcess() {
         }
     });
 
-    if(err || attended.length === 0) return alert("Please complete feedback for attended sessions.");
+    if(err || attended.length === 0) return alert("Please complete feedback.");
 
-    // Save locally immediately
+    // SAVE LOGS LOCALLY FIRST
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    // Change UI to success state immediately
-    document.getElementById('user-view').innerHTML = `
-        <div style='text-align:center; padding: 40px 10px;'>
-            <h2 style='color:#005eb8;'>Thank You, ${name}!</h2>
-            <p>Your certificate is downloading. If it doesn't start, please refresh.</p>
-            <button class="btn-primary" style="width:200px" onclick="location.reload()">Back to Form</button>
-        </div>`;
+    // UI SUCCESS STATE (DO NOT WAIT FOR SERVER)
+    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center;'>Submitted!</h2><p style='text-align:center;'>Your certificate is downloading...</p><button onclick='location.reload()' style='display:block; margin:auto;'>New Submission</button>";
 
-    // Download the PDF
+    // GENERATE PDF
     await generateCert(name, attended, false);
     
-    // Background sync (Firewall safe)
+    // FIRE AND FORGET - NO HANGING
     fetch("https://api.web3forms.com/submit", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ 
-            access_key: ACCESS_KEY, 
-            name: name, 
-            email: email, 
-            subject: `ACE Feedback: ${name}`,
-            message: msg 
-        }) 
-    }).catch(e => console.warn("Email blocked by network firewall, but log saved locally."));
+        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }),
+        mode: 'cors' 
+    }).catch(e => console.log("Network restricted, logs saved locally."));
 }
 
 function checkAdmin() {
-    if (prompt("Admin Password:") === ADMIN_PASS) {
+    if (prompt("Pass:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         loadAdminWorkspace();
@@ -153,7 +141,7 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Updated locally. Push to GitHub for global sync.");
+    alert("Updated locally.");
     applyLiveUI();
 }
 
@@ -162,25 +150,12 @@ function renderLog() {
     document.getElementById('attendance-log-list').innerHTML = logs.reverse().map((l, i) => `
         <div class="log-entry">
             <div><strong>${l.name}</strong><br><small>${l.date}</small></div>
-            <div style="display:flex; gap:5px;">
-                <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
-                <button class="btn-del" onclick="deleteSingleLog(${logs.length - 1 - i})">×</button>
-            </div>
+            <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
         </div>`).join('');
 }
 
-function deleteSingleLog(idx) {
-    if(!confirm("Delete?")) return;
-    let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-    logs.splice(idx, 1);
-    localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
-    renderLog();
-}
-
 function clearAllLogs() {
-    if(!confirm("Wipe logs?")) return;
-    localStorage.removeItem('ace_attendance_log');
-    renderLog();
+    if(confirm("Wipe logs?")) { localStorage.removeItem('ace_attendance_log'); renderLog(); }
 }
 
 function regenerateFromLog(idx) {
@@ -217,7 +192,7 @@ function processImportedData() {
         card.innerHTML = `<h4>${session.title}</h4><div class="analysis-row">
             <div class="chart-box"><canvas id="c-${idx}"></canvas></div>
             <div class="chart-box"><canvas id="d-${idx}"></canvas></div>
-            <div class="com-box"><b>Comments:</b><br>${comms.join('<br>• ') || 'None'}</div>
+            <div class="com-box">${comms.join('<br>• ')}</div>
         </div>`;
         container.appendChild(card);
         renderD(idx, 'c', cC); renderD(idx, 'd', dC);
@@ -226,19 +201,16 @@ function processImportedData() {
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 function renderD(idx, type, v) {
-    const has = Object.values(v).reduce((a,b)=>a+b,0) > 0;
     new Chart(document.getElementById(`${type}-${idx}`), {
         type: 'doughnut',
-        data: { labels: Object.keys(v), datasets: [{ data: has ? Object.values(v) : [1], backgroundColor: has ? Object.keys(v).map(k=>RATING_COLORS[k]) : ['#eee'] }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, cutout: '70%' }
+        data: { labels: Object.keys(v), datasets: [{ data: Object.values(v), backgroundColor: Object.keys(v).map(k=>RATING_COLORS[k]) }] },
+        options: { plugins: { legend: { display: false } } }
     });
 }
 
 function showTab(t) {
     document.querySelectorAll('.tab-content').forEach(c => c.style.display='none');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`tab-${t}`).style.display='block';
-    document.getElementById(`btn-tab-${t}`).classList.add('active');
 }
 
 async function generateCert(name, detail, isSpeaker) {
