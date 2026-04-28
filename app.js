@@ -6,15 +6,14 @@ const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
 const RATING_COLORS = { Excellent: '#28a745', Good: '#41b6e6', Satisfactory: '#ffc107', Poor: '#d93025' };
 
-// --- HARDCODED MASTER AGENDA (From Image) ---
-// These sessions will now show for every user on every browser.
+// --- MASTER DATA: HARDCODED TO SYNC ACROSS ALL BROWSERS ---
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
-    status: "open",
+    status: "open", 
     date: "28 April 2026",
     agenda: [
         { id: 1, time: "13:30", title: "Critical Care Echo Audit", speakers: ["Steve Benington", "Suraj", "Vikas", "Hussein"] },
         { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] },
-        { id: 3, time: "14:35", title: "ICM recent Updates", speakers: ["Speaker Name"] },
+        { id: 3, time: "14:35", title: "Quality and Safety Update in ORC", speakers: ["Ian Tyrrell-Marsh"] },
         { id: 4, time: "15:05", title: "Justice in Critical Care - a question of allocation", speakers: ["Speaker Name"] },
         { id: 5, time: "15:45", title: "PICC Line Insertion Service", speakers: ["Speaker Name"] }
     ]
@@ -80,7 +79,7 @@ async function startProcess() {
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center; color:#005eb8;'>Submitted Successfully!</h2><p style='text-align:center;'>Your certificate is downloading...</p>";
+    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center; color:#005eb8;'>Submitted!</h2><p style='text-align:center;'>Your certificate is downloading...</p>";
     await generateCert(name, attended, false);
     
     fetch("https://api.web3forms.com/submit", { 
@@ -90,9 +89,8 @@ async function startProcess() {
     });
 }
 
-// --- ADMIN PANEL ---
 function checkAdmin() {
-    if (prompt("Enter Admin Password:") === ADMIN_PASS) {
+    if (prompt("Admin Password:") === ADMIN_PASS) {
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         loadAdminWorkspace();
@@ -114,7 +112,6 @@ function addSession() {
 function renderAdminAgenda() {
     const list = document.getElementById('admin-agenda-list');
     list.innerHTML = adminWork.agenda.map((item, index) => {
-        // Splitting multiple speakers by comma for individual buttons
         const speakerButtons = item.speakers.map(s => 
             `<button onclick="generateCert('${s.trim()}', '${item.title}', true)" class="btn-mini">Cert: ${s.trim()}</button>`
         ).join('');
@@ -141,11 +138,10 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Live Portal Updated for THIS browser! (To update for all, edit app.js file directly)");
+    alert("Updated locally. Reminder: Hardcode app.js for global sync.");
     applyLiveUI();
 }
 
-// --- ATTENDANCE LOGS ---
 function renderLog() {
     const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     document.getElementById('attendance-log-list').innerHTML = logs.reverse().map((l, i) => `
@@ -159,7 +155,7 @@ function renderLog() {
 }
 
 function deleteSingleLog(idx) {
-    if(!confirm("Delete this entry?")) return;
+    if(!confirm("Delete?")) return;
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.splice(idx, 1);
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
@@ -167,7 +163,7 @@ function deleteSingleLog(idx) {
 }
 
 function clearAllLogs() {
-    if(!confirm("Wipe all logs?")) return;
+    if(!confirm("Wipe logs?")) return;
     localStorage.removeItem('ace_attendance_log');
     renderLog();
 }
@@ -177,7 +173,6 @@ function regenerateFromLog(idx) {
     generateCert(logs[idx].name, logs[idx].sessions, false);
 }
 
-// --- ANALYSIS LOGIC ---
 function handleFileUpload(e) {
     const reader = new FileReader();
     reader.onload = (f) => { document.getElementById('raw-data-input').value = f.target.result; processImportedData(); };
@@ -231,7 +226,6 @@ function showTab(t) {
     document.getElementById(`btn-tab-${t}`).classList.add('active');
 }
 
-// --- CERTIFICATE GENERATION ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
