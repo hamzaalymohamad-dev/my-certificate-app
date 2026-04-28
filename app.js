@@ -6,7 +6,7 @@ const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
 const RATING_COLORS = { Excellent: '#28a745', Good: '#41b6e6', Satisfactory: '#ffc107', Poor: '#d93025' };
 
-// --- MASTER DATA: HARDCODED TO SYNC ACROSS ALL BROWSERS ---
+// --- MASTER DATA: HARDCODED FOR GLOBAL SYNC ---
 let liveData = JSON.parse(localStorage.getItem('ace_live_data')) || {
     status: "open", 
     date: "28 April 2026",
@@ -52,6 +52,7 @@ function toggleS(id) {
     b.querySelectorAll('select, textarea').forEach(el => el.required = !isNA);
 }
 
+// OPTIMIZED PROCESS: CERTIFICATE FIRST, EMAIL SECOND
 async function startProcess() {
     const name = document.getElementById('userName').value.trim();
     const email = document.getElementById('userEmail').value.trim();
@@ -75,18 +76,34 @@ async function startProcess() {
 
     if(err || attended.length === 0) return alert("Please complete feedback for attended sessions.");
 
+    // Save locally immediately
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = "<h2 style='text-align:center; color:#005eb8;'>Submitted!</h2><p style='text-align:center;'>Your certificate is downloading...</p>";
+    // Change UI to success state immediately
+    document.getElementById('user-view').innerHTML = `
+        <div style='text-align:center; padding: 40px 10px;'>
+            <h2 style='color:#005eb8;'>Thank You, ${name}!</h2>
+            <p>Your certificate is downloading. If it doesn't start, please refresh.</p>
+            <button class="btn-primary" style="width:200px" onclick="location.reload()">Back to Form</button>
+        </div>`;
+
+    // Download the PDF
     await generateCert(name, attended, false);
     
+    // Background sync (Firewall safe)
     fetch("https://api.web3forms.com/submit", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }) 
-    });
+        body: JSON.stringify({ 
+            access_key: ACCESS_KEY, 
+            name: name, 
+            email: email, 
+            subject: `ACE Feedback: ${name}`,
+            message: msg 
+        }) 
+    }).catch(e => console.warn("Email blocked by network firewall, but log saved locally."));
 }
 
 function checkAdmin() {
@@ -124,10 +141,8 @@ function renderAdminAgenda() {
                 <button class="btn-del" onclick="adminWork.agenda.splice(${index},1); renderAdminAgenda()">×</button>
             </div>
             <div style="display:flex; gap:10px; flex-direction: column;">
-                <input type="text" value="${item.speakers.join(', ')}" placeholder="Speakers (comma separated)" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
-                <div style="display:flex; gap:5px; flex-wrap: wrap;">
-                    ${speakerButtons}
-                </div>
+                <input type="text" value="${item.speakers.join(', ')}" onchange="adminWork.agenda[${index}].speakers=this.value.split(',').map(s=>s.trim())">
+                <div style="display:flex; gap:5px; flex-wrap: wrap;">${speakerButtons}</div>
             </div>
         </div>`;
     }).join('');
@@ -138,7 +153,7 @@ function syncToLive() {
     adminWork.status = document.getElementById('form-status-toggle').value;
     liveData = JSON.parse(JSON.stringify(adminWork));
     localStorage.setItem('ace_live_data', JSON.stringify(liveData));
-    alert("Updated locally. Reminder: Hardcode app.js for global sync.");
+    alert("Updated locally. Push to GitHub for global sync.");
     applyLiveUI();
 }
 
@@ -149,7 +164,7 @@ function renderLog() {
             <div><strong>${l.name}</strong><br><small>${l.date}</small></div>
             <div style="display:flex; gap:5px;">
                 <button class="btn-mini" onclick="regenerateFromLog(${logs.length - 1 - i})">PDF</button>
-                <button class="btn-del" style="padding:2px 8px;" onclick="deleteSingleLog(${logs.length - 1 - i})">×</button>
+                <button class="btn-del" onclick="deleteSingleLog(${logs.length - 1 - i})">×</button>
             </div>
         </div>`).join('');
 }
