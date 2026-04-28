@@ -234,3 +234,4 @@ async function generateCert(name, detail, isSpeaker) {
     doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
     doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
 }
+//
