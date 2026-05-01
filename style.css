@@ -1,9 +1,16 @@
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; color: #333; margin: 0; padding: 0; }
-.header { background-color: #005eb8; color: white; padding: 30px 20px; text-align: center; margin-bottom: 30px; }
-.form-container { max-width: 700px; margin: 0 auto; padding: 0 20px; }
-.input-group { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-input[type="text"], input[type="email"], textarea, .rating-select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-.session-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid #005eb8; }
-.btn-primary { background-color: #005eb8; color: white; border: none; padding: 15px 30px; border-radius: 5px; font-size: 18px; font-weight: bold; width: 100%; cursor: pointer; transition: background 0.3s; }
-.btn-primary:hover { background-color: #003d7a; }
-.log-container { background: white; border-radius: 10px; margin-top: 20px; overflow: hidden; border: 1px solid #ddd; }
+:root { --nhs-blue: #005eb8; --nhs-light-blue: #e8edff; }
+body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+.header { background: var(--nhs-blue); color: white; text-align: center; padding: 20px; }
+.logo { height: 40px; margin-bottom: 10px; }
+.main-card { max-width: 600px; margin: 20px auto; padding: 20px; }
+input, textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+.session-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 6px solid var(--nhs-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.btn-submit { background: var(--nhs-blue); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
+.btn-submit:hover { background: #003d7a; }
+.admin-footer { text-align: center; padding: 20px; }
+.btn-admin-link { background: none; border: none; color: #999; cursor: pointer; text-decoration: underline; }
+#admin-view { max-width: 800px; margin: 0 auto; padding: 20px; }
+.admin-controls { display: flex; gap: 10px; margin-bottom: 20px; }
+.btn-download { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+.btn-clear { background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+.log-list { background: white; border-radius: 8px; padding: 10px; }
