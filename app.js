@@ -39,3 +39,4 @@ async function startProcess() {
         mode: 'no-cors' // This prevents the browser from waiting for a response
     });
 }
+//
