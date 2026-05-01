@@ -3,175 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACE Day Feedback Portal</title>
+    <title>Critical Care ACE Day</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Load PDF Library -->
+    <!-- Required for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-
     <div id="user-view">
         <div class="header">
-            <img src="https://i.postimg.cc/bN5B3YLk/mft.png" alt="MFT Logo" style="height: 50px;">
+            <img src="https://i.postimg.cc/bN5B3YLk/mft.png" alt="MFT Logo" class="logo">
             <h1>Critical Care ACE Day</h1>
-            <p>Feedback & Certificate Portal</p>
+            <p>Feedback & Certification</p>
         </div>
 
-        <div class="form-container">
-            <div class="input-group">
-                <input type="text" id="userName" placeholder="Your Full Name (for certificate)" required>
-                <input type="email" id="userEmail" placeholder="Your Email Address" required>
-            </div>
-
+        <div class="main-card">
+            <input type="text" id="userName" placeholder="Full Name (for certificate)" required>
+            <input type="email" id="userEmail" placeholder="Email Address" required>
+            
             <div id="sessions-container">
-                <!-- Agenda will be injected here by the script below -->
+                <!-- Script will fill this -->
             </div>
 
             <div class="session-card">
-                <label><strong>Overall Feedback for the Day:</strong></label>
-                <textarea id="generalFeedback" placeholder="What went well? What could be improved?" required></textarea>
+                <label><strong>Overall Feedback:</strong></label>
+                <textarea id="generalFeedback" placeholder="Your thoughts on the day..."></textarea>
             </div>
 
-            <button onclick="startProcess()" id="submitBtn" class="btn-primary">Submit & Download Certificate</button>
+            <button onclick="startProcess()" class="btn-submit">Submit & Download Certificate</button>
         </div>
 
-        <div style="text-align:center; margin-top:40px;">
-            <button onclick="checkAdmin()" style="background:none; border:none; color:#ccc; cursor:pointer;">Admin Login</button>
+        <div class="admin-footer">
+            <button onclick="checkAdmin()" class="btn-admin-link">Admin Login</button>
         </div>
     </div>
 
-    <div id="admin-view" style="display:none; max-width:800px; margin:20px auto; padding:20px;">
-        <button onclick="location.reload()" class="btn-sec">← Back to Form</button>
-        <h2 style="color:#005eb8;">Admin Dashboard</h2>
-        <div style="margin:20px 0; display:flex; gap:10px;">
-            <button onclick="exportToCSV()" style="background:#28a745; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">📥 Export to Excel (CSV)</button>
-            <button onclick="clearLogs()" style="background:#d93025; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;">🗑️ Clear All Logs</button>
+    <div id="admin-view" style="display:none;">
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <button onclick="location.reload()" class="btn-back">← Back</button>
         </div>
-        <div id="attendance-log-list" class="log-container"></div>
+        <div class="admin-controls">
+            <button onclick="exportToCSV()" class="btn-download">📥 Download CSV (Excel)</button>
+            <button onclick="clearLogs()" class="btn-clear">🗑️ Clear All Data</button>
+        </div>
+        <div id="attendance-log-list" class="log-list"></div>
     </div>
 
-    <script>
-        const ACCESS_KEY = "d0491ab4-b81b-43f5-9341-10a60a6309fe";
-        const ADMIN_PASS = "Aly2026";
-        const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png";
-        const MFT_LOGO = "https://i.postimg.cc/bN5B3YLk/mft.png";
-        const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
-
-        const AGENDA = [
-            { id: 1, title: "Critical Care Echo Audit" },
-            { id: 2, title: "Vancomycin Infusions Re-Audit" },
-            { id: 3, title: "Quality and Safety Update in ORC" },
-            { id: 4, title: "Justice in Critical Care" },
-            { id: 5, title: "PICC Line Insertion Service" }
-        ];
-
-        // --- RENDER FORM ---
-        function renderForm() {
-            const container = document.getElementById('sessions-container');
-            if (!container || container.innerHTML !== "") return;
-            
-            container.innerHTML = AGENDA.map(item => `
-                <div class="session-card" id="card-${item.id}">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong>${item.title}</strong>
-                        <label style="font-size:0.8em;"><input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A</label>
-                    </div>
-                    <div id="body-${item.id}" style="margin-top:10px;">
-                        <select id="r1-${item.id}" class="rating-select"><option value="">Content Quality</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
-                        <select id="r2-${item.id}" class="rating-select"><option value="">Speaker Delivery</option><option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option></select>
-                        <textarea id="comm-${item.id}" placeholder="Comments on this session..."></textarea>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleS(id) {
-            const isNA = document.getElementById(`na-${id}`).checked;
-            document.getElementById(`body-${id}`).style.display = isNA ? 'none' : 'block';
-        }
-
-        // --- SUBMISSION ---
-        async function startProcess() {
-            const name = document.getElementById('userName').value.trim();
-            const email = document.getElementById('userEmail').value.trim();
-            const gen = document.getElementById('generalFeedback').value.trim();
-            if(!name || !email) return alert("Please enter your name and email.");
-
-            let attended = [];
-            let msg = `Feedback from ${name} (${email})\nOverall: ${gen}\n\n`;
-
-            AGENDA.forEach(item => {
-                if(!document.getElementById(`na-${item.id}`).checked) {
-                    const r1 = document.getElementById(`r1-${item.id}`).value;
-                    const r2 = document.getElementById(`r2-${item.id}`).value;
-                    attended.push(item.title);
-                    msg += `SESSION: ${item.title} | Quality: ${r1} | Delivery: ${r2}\n`;
-                }
-            });
-
-            // Save Locally
-            let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-            logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
-            localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
-
-            // UI Success
-            document.getElementById('user-view').innerHTML = `<div style="text-align:center; padding:100px 20px;"><h2>Success!</h2><p>Thank you ${name}. Your certificate is downloading.</p><button onclick="location.reload()" class="btn-primary">Back to Form</button></div>`;
-
-            // PDF
-            await generateCert(name, attended);
-
-            // Email (Background)
-            fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg })
-            });
-        }
-
-        // --- ADMIN ---
-        function checkAdmin() {
-            if (prompt("Admin Password:") === ADMIN_PASS) {
-                document.getElementById('user-view').style.display = 'none';
-                document.getElementById('admin-view').style.display = 'block';
-                renderLogs();
-            }
-        }
-
-        function renderLogs() {
-            const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-            document.getElementById('attendance-log-list').innerHTML = logs.reverse().map(l => `
-                <div style="border-bottom:1px solid #eee; padding:10px; background:white;">
-                    <strong>${l.name}</strong> (${l.email})<br><small>${l.date}</small>
-                </div>
-            `).join('') || "No logs found.";
-        }
-
-        window.exportToCSV = function() {
-            const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
-            let csv = "Name,Email,Date,Sessions\n";
-            logs.forEach(l => csv += `"${l.name}","${l.email}","${l.date}","${l.sessions.join(';')}"\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'ACE_Attendance.csv';
-            a.click();
-        };
-
-        function clearLogs() { if(confirm("Clear all?")) { localStorage.removeItem('ace_attendance_log'); renderLogs(); } }
-
-        // --- PDF ENGINE ---
-        async function generateCert(name, sessions) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'pt', 'a4');
-            doc.setDrawColor(0, 94, 184).setLineWidth(5).rect(20, 20, 802, 555);
-            doc.setFont("helvetica", "bold").setFontSize(28).setTextColor(0, 51, 102).text("Critical Care ACE Day", 421, 100, {align:"center"});
-            doc.setFontSize(40).setTextColor(0, 94, 184).text(name, 421, 280, {align:"center"});
-            doc.setFontSize(16).setTextColor(0).setFont("helvetica", "normal").text("Has participated in sessions on 28 April 2026", 421, 330, {align:"center"});
-            doc.save(`${name}_Certificate.pdf`);
-        }
-
-        setInterval(renderForm, 1000);
-        window.onload = renderForm;
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
