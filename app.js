@@ -12,41 +12,38 @@ const AGENDA_DATA = [
     { id: 5, time: "15:45", title: "PICC Line Insertion Service", speakers: ["Speaker Name"] }
 ];
 
-// --- CORE RENDER FUNCTION ---
+// --- RENDER AGENDA ---
 function forceRenderAgenda() {
     const container = document.getElementById('sessions-container');
-    if (!container) return; // Wait until the element exists
+    if (!container || container.innerHTML.trim() !== "") return;
     
-    // Only render if the container is empty to avoid flickering
-    if (container.innerHTML.trim() === "") {
-        container.innerHTML = AGENDA_DATA.map(item => `
-            <div class="session-card" style="border:1px solid #005eb8; padding:15px; margin-bottom:15px; border-radius:10px; background:#fff;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                    <span style="color:#005eb8; font-weight:bold; font-size:1.1em;">${item.time} - ${item.title}</span>
-                    <label style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.8em; cursor:pointer;">
-                        <input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A
-                    </label>
-                </div>
-                <div id="body-${item.id}">
-                    <div style="margin-bottom:8px;">
-                        <label style="display:block; font-size:0.85em; color:#666;">Content Quality:</label>
-                        <select id="r1-${item.id}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                            <option value="">-- Rate Content --</option>
-                            <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <label style="display:block; font-size:0.85em; color:#666;">Speaker Delivery:</label>
-                        <select id="r2-${item.id}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                            <option value="">-- Rate Delivery --</option>
-                            <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
-                        </select>
-                    </div>
-                    <textarea id="comm-${item.id}" placeholder="Comments on this session..." required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-family:inherit;"></textarea>
-                </div>
+    container.innerHTML = AGENDA_DATA.map(item => `
+        <div class="session-card" style="border:1px solid #005eb8; padding:15px; margin-bottom:15px; border-radius:10px; background:#fff;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <span style="color:#005eb8; font-weight:bold; font-size:1.1em;">${item.time} - ${item.title}</span>
+                <label style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.8em; cursor:pointer;">
+                    <input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A
+                </label>
             </div>
-        `).join('');
-    }
+            <div id="body-${item.id}">
+                <div style="margin-bottom:8px;">
+                    <label style="display:block; font-size:0.85em; color:#666;">Content Quality:</label>
+                    <select id="r1-${item.id}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="">-- Rate Content --</option>
+                        <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="display:block; font-size:0.85em; color:#666;">Speaker Delivery:</label>
+                    <select id="r2-${item.id}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="">-- Rate Delivery --</option>
+                        <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
+                    </select>
+                </div>
+                <textarea id="comm-${item.id}" placeholder="Comments..." required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-family:inherit;"></textarea>
+            </div>
+        </div>
+    `).join('');
 }
 
 function toggleS(id) {
@@ -59,7 +56,7 @@ function toggleS(id) {
     });
 }
 
-// --- SUBMISSION LOGIC ---
+// --- SUBMISSION ---
 async function startProcess() {
     const name = document.getElementById('userName')?.value.trim();
     const email = document.getElementById('userEmail')?.value.trim();
@@ -82,21 +79,18 @@ async function startProcess() {
         }
     });
 
-    if(attended.length === 0) return alert("Please complete at least one session or mark others as N/A.");
+    if(attended.length === 0) return alert("Please complete at least one session.");
 
-    // 1. Save Log
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    // 2. Immediate Success UI
-    document.body.innerHTML = `<div style="text-align:center; padding:100px 20px; font-family:sans-serif;">
-        <h1 style="color:#005eb8;">Submitted Successfully!</h1>
+    document.getElementById('user-view').innerHTML = `<div style="text-align:center; padding:100px 20px;">
+        <h1 style="color:#005eb8;">Submitted!</h1>
         <p>Thank you, ${name}. Your certificate is downloading.</p>
-        <button onclick="location.reload()" style="padding:15px 30px; background:#005eb8; color:#white; border:none; border-radius:5px; cursor:pointer;">Back to Form</button>
+        <button onclick="location.reload()" style="padding:15px 30px; background:#005eb8; color:white; border:none; border-radius:5px;">New Form</button>
     </div>`;
 
-    // 3. Cert & Email
     await generateCert(name, attended, false);
     fetch("https://api.web3forms.com/submit", { 
         method: "POST", 
@@ -106,7 +100,32 @@ async function startProcess() {
     });
 }
 
-// --- CERTIFICATE ENGINE ---
+// --- ADMIN FEATURES ---
+function checkAdmin() {
+    const pass = prompt("Enter Admin Password:");
+    if (pass === ADMIN_PASS) {
+        document.getElementById('user-view').style.display = 'none';
+        document.getElementById('admin-view').style.display = 'block';
+        renderLog();
+    } else {
+        alert("Incorrect Password");
+    }
+}
+
+function renderLog() {
+    const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
+    const logList = document.getElementById('attendance-log-list');
+    if (!logList) return;
+    
+    logList.innerHTML = logs.reverse().map(l => `
+        <div style="border-bottom:1px solid #eee; padding:10px; font-size:0.9em;">
+            <strong>${l.name}</strong> (${l.email})<br>
+            <small>${l.date}</small> - ${l.sessions.length} sessions
+        </div>
+    `).join('') || "No logs found yet.";
+}
+
+// --- PDF GENERATION ---
 async function generateCert(name, detail, isSpeaker) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'pt', 'a4');
@@ -124,11 +143,10 @@ async function generateCert(name, detail, isSpeaker) {
         doc.setFontSize(10); let y = 360;
         detail.slice(0, 8).forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
     }
-    doc.setFont("helvetica", "bold").text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
+    doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
     doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
 }
 
-// --- THE EMERGENCY HEARTBEAT ---
-// This runs every 1 second to make sure the agenda stays visible
+// Heartbeat
 setInterval(forceRenderAgenda, 1000);
 window.onload = forceRenderAgenda;
