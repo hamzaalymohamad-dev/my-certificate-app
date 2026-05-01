@@ -1,80 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Critical Care ACE Day Portal</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <div class="watermark-bg"></div>
-    <div class="card">
-        <div class="header-section">
-            <div class="logo-row">
-                <img src="https://i.postimg.cc/4dGMV8wX/bee.png" class="bee-logo">
-                <img src="https://i.postimg.cc/bN5B3YLk/mft.png" class="trust-logo">
-            </div>
-            <h2>Critical Care ACE Day</h2>
-            <p class="form-subtitle">Feedback & Certification Form</p>
-            <div id="date-display" class="date-header">-- April 2026 --</div>
-        </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        <hr>
-
-        <div id="user-view">
-            <div id="form-closed-msg" style="display:none; text-align:center;"><h3>Portal Closed</h3></div>
-            <div id="form-active-area">
-                <div class="form-row">
-                    <input type="text" id="userName" placeholder="Full Name *" required>
-                    <input type="email" id="userEmail" placeholder="Email Address *" required>
-                </div>
-                <div id="sessions-container"></div>
-                <textarea id="generalFeedback" placeholder="Overall Event Feedback & Suggestions... *" required></textarea>
-                <button class="btn-primary" onclick="startProcess()">Submit & Download Certificate</button>
-            </div>
-        </div>
-
-        <div id="admin-view" style="display:none;">
-            <div class="admin-header-bar">
-                <span><strong>Admin Management</strong></span>
-                <button class="btn-sync" onclick="syncToLive()">Sync Changes</button>
-            </div>
-            <div class="admin-tabs">
-                <button class="tab-btn active" id="btn-tab-agenda" onclick="showTab('agenda')">Agenda</button>
-                <button class="tab-btn" id="btn-tab-analysis" onclick="showTab('analysis')">Analysis</button>
-                <button class="tab-btn" id="btn-tab-logs" onclick="showTab('logs')">Logs</button>
-            </div>
-
-            <div id="tab-agenda" class="tab-content">
-                <input type="text" id="admin-date-input" placeholder="Event Date">
-                <select id="form-status-toggle">
-                    <option value="open">Portal Open</option>
-                    <option value="closed">Portal Closed</option>
-                </select>
-                <div id="admin-agenda-list"></div>
-                <button class="btn-sec" onclick="addSession()">+ Add Session</button>
-            </div>
-
-            <div id="tab-analysis" class="tab-content" style="display:none;">
-                <input type="file" accept=".csv" onchange="handleFileUpload(event)">
-                <textarea id="raw-data-input" style="display:none;"></textarea>
-                <div id="analysis-results"></div>
-            </div>
-
-            <div id="tab-logs" class="tab-content" style="display:none;">
-                <div style="text-align:right; margin-bottom:10px;">
-                    <button class="btn-del" style="padding:5px 10px; font-size:11px;" onclick="clearAllLogs()">Clear All Logs</button>
-                </div>
-                <div id="attendance-log-list"></div>
-            </div>
-            <button class="btn-sec" style="color:#999; border:none;" onclick="location.reload()">Logout</button>
-        </div>
-
-        <div class="footer-login" onclick="checkAdmin()">Admin Login</div>
-    </div>
-    <script>
+<script>
 const ACCESS_KEY = "d0491ab4-b81b-43f5-9341-10a60a6309fe";
 const ADMIN_PASS = "Aly2026";
 const WATERMARK_URL = "https://i.postimg.cc/x8C63BzL/Designer-2-removebg-preview.png";
@@ -82,132 +8,181 @@ const MFT_LOGO = "https://i.postimg.cc/bN5B3YLk/mft.png";
 const BEE_LOGO = "https://i.postimg.cc/4dGMV8wX/bee.png";
 
 const AGENDA_DATA = [
-    { id: 1, time: "13:30", title: "Critical Care Echo Audit", speakers: ["Steve Benington", "Suraj", "Vikas", "Hussein"] },
-    { id: 2, time: "14:15", title: "Vancomycin Infusions Re-Audit", speakers: ["Anna Tilley"] },
-    { id: 3, time: "14:35", title: "Quality and Safety Update in ORC", speakers: ["Ian Tyrrell-Marsh"] },
-    { id: 4, time: "15:05", title: "Justice in Critical Care - a question of allocation", speakers: ["Speaker Name"] },
-    { id: 5, time: "15:45", title: "PICC Line Insertion Service", speakers: ["Speaker Name"] }
+    { id: 1, title: "Critical Care Echo Audit" },
+    { id: 2, title: "Vancomycin Infusions Re-Audit" },
+    { id: 3, title: "Quality and Safety Update in ORC" },
+    { id: 4, title: "Justice in Critical Care" },
+    { id: 5, title: "PICC Line Insertion Service" }
 ];
 
-function forceRenderAgenda() {
+// 1. FORCED UI INITIALIZATION
+function initializeApp() {
+    let mainView = document.getElementById('user-view');
+    if (!mainView) {
+        mainView = document.createElement('div');
+        mainView.id = 'user-view';
+        document.body.prepend(mainView);
+    }
+
+    if (!document.getElementById('setup-done')) {
+        mainView.innerHTML = `
+            <div style="max-width:600px; margin:20px auto; font-family:sans-serif; padding:20px;" id="setup-done">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <img src="${MFT_LOGO}" style="height:50px;">
+                    <h2 style="color:#005eb8;">ACE Day Feedback & Certificate</h2>
+                </div>
+                
+                <input type="text" id="userName" placeholder="Full Name (for certificate)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+                <input type="email" id="userEmail" placeholder="Email Address" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ccc; border-radius:5px;">
+                
+                <div id="sessions-container"></div>
+                
+                <textarea id="generalFeedback" placeholder="Overall thoughts on the day..." style="width:100%; height:80px; margin-top:20px; padding:10px; border:1px solid #ccc; border-radius:5px;"></textarea>
+                
+                <button onclick="startProcess()" style="width:100%; padding:15px; background:#005eb8; color:white; border:none; border-radius:5px; font-weight:bold; font-size:1.1em; margin-top:20px; cursor:pointer;">
+                    Submit & Download Certificate
+                </button>
+                
+                <div style="text-align:center; margin-top:30px;">
+                    <button onclick="checkAdmin()" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:0.8em;">Admin Login</button>
+                </div>
+            </div>
+            <div id="admin-view" style="display:none; max-width:600px; margin:20px auto; font-family:sans-serif; padding:20px;">
+                <button onclick="location.reload()" style="margin-bottom:10px;">← Back</button>
+                <h3>Attendance Log</h3>
+                <div id="attendance-log-list"></div>
+            </div>
+        `;
+        renderAgenda();
+    }
+}
+
+function renderAgenda() {
     const container = document.getElementById('sessions-container');
-    if (!container || container.innerHTML.trim() !== "") return;
-    
     container.innerHTML = AGENDA_DATA.map(item => `
-        <div class="session-card" style="border:1px solid #005eb8; padding:15px; margin-bottom:15px; border-radius:10px; background:#fff; color: #333;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                <span style="color:#005eb8; font-weight:bold; font-size:1.1em;">${item.time} - ${item.title}</span>
-                <label style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.8em; cursor:pointer;">
-                    <input type="checkbox" onchange="toggleS('${item.id}')" id="na-${item.id}"> N/A
+        <div class="card" style="border:1px solid #ddd; padding:15px; margin-bottom:10px; border-radius:8px; background:#f9f9f9;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#333;">${item.title}</strong>
+                <label style="font-size:0.8em; color:#666;">
+                    <input type="checkbox" onchange="toggleSession('${item.id}', this.checked)"> N/A
                 </label>
             </div>
-            <div id="body-${item.id}">
-                <div style="margin-bottom:8px;">
-                    <label style="display:block; font-size:0.85em; color:#666;">Content Quality:</label>
-                    <select id="r1-${item.id}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                        <option value="">-- Rate Content --</option>
-                        <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
-                    </select>
-                </div>
-                <div style="margin-bottom:8px;">
-                    <label style="display:block; font-size:0.85em; color:#666;">Speaker Delivery:</label>
-                    <select id="r2-${item.id}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
-                        <option value="">-- Rate Delivery --</option>
-                        <option>Excellent</option><option>Good</option><option>Satisfactory</option><option>Poor</option>
-                    </select>
-                </div>
-                <textarea id="comm-${item.id}" placeholder="Comments..." required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-family:inherit;"></textarea>
+            <div id="fields-${item.id}" style="margin-top:10px;">
+                <select id="r1-${item.id}" style="width:48%; padding:5px; margin-right:2%;">
+                    <option value="">Quality</option>
+                    <option>Excellent</option><option>Good</option><option>Average</option>
+                </select>
+                <select id="r2-${item.id}" style="width:48%; padding:5px;">
+                    <option value="">Delivery</option>
+                    <option>Excellent</option><option>Good</option><option>Average</option>
+                </select>
             </div>
         </div>
     `).join('');
 }
 
-function toggleS(id) {
-    const isNA = document.getElementById(`na-${id}`).checked;
-    const b = document.getElementById(`body-${id}`);
-    b.style.opacity = isNA ? "0.2" : "1";
-    b.querySelectorAll('select, textarea').forEach(el => {
-        el.disabled = isNA;
-        el.required = !isNA;
-    });
+function toggleSession(id, isNA) {
+    const div = document.getElementById(`fields-${id}`);
+    div.style.opacity = isNA ? "0.3" : "1";
+    div.querySelectorAll('select').forEach(s => s.disabled = isNA);
 }
 
+// 2. SUBMISSION LOGIC
 async function startProcess() {
-    const name = document.getElementById('userName')?.value.trim();
-    const email = document.getElementById('userEmail')?.value.trim();
-    const general = document.getElementById('generalFeedback')?.value.trim();
-    
-    if(!name || !email || !general) return alert("Please fill Name, Email, and Overall Feedback.");
+    const name = document.getElementById('userName').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const gen = document.getElementById('generalFeedback').value.trim();
+
+    if (!name || !email) return alert("Please enter Name and Email");
 
     let attended = [];
-    let msg = `GENERAL_FEEDBACK: ${general}\n\n`;
-
     AGENDA_DATA.forEach(item => {
-        const naCheck = document.getElementById(`na-${item.id}`);
-        if(naCheck && !naCheck.checked) {
-            const r1 = document.getElementById(`r1-${item.id}`).value;
-            const r2 = document.getElementById(`r2-${item.id}`).value;
-            const cm = document.getElementById(`comm-${item.id}`).value.trim();
+        if (!document.querySelector(`#na-${item.id}`)?.checked) {
             attended.push(item.title);
-            msg += `SESSION: ${item.title}\nQuality: ${r1}\nDelivery: ${r2}\nComment: ${cm}\n---\n`;
         }
     });
 
+    // Save Data
     let logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
     logs.push({ name, email, date: new Date().toLocaleString(), sessions: attended });
     localStorage.setItem('ace_attendance_log', JSON.stringify(logs));
 
-    document.getElementById('user-view').innerHTML = `<div style="text-align:center; padding:50px;">
-        <h1 style="color:#005eb8;">Submitted!</h1>
-        <p>Thank you. Your certificate is downloading.</p>
-        <button onclick="location.reload()" style="padding:10px 20px; background:#005eb8; color:white; border:none; border-radius:5px;">New Form</button>
-    </div>`;
+    // Success Message
+    document.getElementById('setup-done').innerHTML = `
+        <div style="text-align:center; padding:40px;">
+            <h2 style="color:#005eb8;">Success!</h2>
+            <p>Thank you ${name}. Your certificate is downloading.</p>
+            <button onclick="location.reload()" style="padding:10px 20px; background:#005eb8; color:white; border:none; border-radius:5px;">Submit Another</button>
+        </div>
+    `;
 
-    await generateCert(name, attended, false);
-    fetch("https://api.web3forms.com/submit", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ access_key: ACCESS_KEY, name, email, message: msg }),
-        mode: 'no-cors' 
+    // Generate PDF & Email
+    await generateCert(name, attended);
+    
+    fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            access_key: ACCESS_KEY,
+            name: name,
+            email: email,
+            message: `New Attendance: ${name}\nSessions: ${attended.join(', ')}\nFeedback: ${gen}`
+        })
     });
 }
 
+// 3. CERTIFICATE ENGINE
+async function generateCert(name, sessions) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'pt', 'a4');
+    
+    // Border
+    doc.setDrawColor(0, 94, 184).setLineWidth(5).rect(20, 20, 802, 555);
+    
+    // Logos
+    try {
+        doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
+        doc.addImage(MFT_LOGO, 'PNG', 680, 40, 120, 45);
+    } catch(e) {}
+
+    doc.setFont("helvetica", "bold").setFontSize(30).setTextColor(0, 51, 102);
+    doc.text("Critical Care ACE Day", 421, 120, {align:"center"});
+    
+    doc.setFontSize(20).setTextColor(0).text("CERTIFICATE OF ATTENDANCE", 421, 180, {align:"center"});
+    
+    doc.setFontSize(45).setTextColor(0, 94, 184).text(name, 421, 280, {align:"center"});
+    
+    doc.setFontSize(16).setTextColor(0).setFont("helvetica", "normal");
+    doc.text("Has participated in clinical audit and education sessions regarding:", 421, 330, {align:"center"});
+    
+    doc.setFontSize(11);
+    let y = 360;
+    sessions.forEach(s => {
+        doc.text(`• ${s}`, 421, y, {align:"center"});
+        y += 20;
+    });
+
+    doc.setFont("helvetica", "bold").text("Mohamad Aly - Clinical Audit Lead", 421, 530, {align:"center"});
+    
+    doc.save(`${name}_ACE_Certificate.pdf`);
+}
+
+// 4. ADMIN LOGIN
 function checkAdmin() {
-    const pass = prompt("Enter Admin Password:");
-    if (pass === ADMIN_PASS) {
-        document.getElementById('user-view').style.display = 'none';
+    if (prompt("Password:") === ADMIN_PASS) {
+        document.getElementById('setup-done').style.display = 'none';
         document.getElementById('admin-view').style.display = 'block';
         const logs = JSON.parse(localStorage.getItem('ace_attendance_log') || "[]");
         document.getElementById('attendance-log-list').innerHTML = logs.reverse().map(l => `
-            <div style="border-bottom:1px solid #eee; padding:10px; color:#333;">
-                <strong>${l.name}</strong> - <small>${l.date}</small>
-            </div>`).join('') || "No logs yet.";
+            <div style="padding:10px; border-bottom:1px solid #eee;">
+                <strong>${l.name}</strong> - ${l.email}<br><small>${l.date}</small>
+            </div>
+        `).join('') || "No logs found.";
     }
 }
 
-async function generateCert(name, detail, isSpeaker) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'pt', 'a4');
-    doc.setGState(new doc.GState({opacity: 0.08}));
-    doc.addImage(WATERMARK_URL, 'PNG', 0, 0, 842, 595); 
-    doc.setGState(new doc.GState({opacity: 1.0}));
-    doc.addImage(BEE_LOGO, 'PNG', 40, 40, 50, 50);
-    doc.addImage(MFT_LOGO, 'PNG', 680, 40, 120, 45);
-    doc.setDrawColor(0, 94, 184).setLineWidth(5).rect(20, 20, 802, 555);
-    doc.setFont("helvetica", "bold").setFontSize(28).setTextColor(0, 51, 102).text("Critical Care ACE Day", 421, 100, {align:"center"});
-    doc.setFontSize(22).setTextColor(0).text(isSpeaker ? "SPEAKER CERTIFICATE" : "CERTIFICATE OF ATTENDANCE", 421, 180, {align:"center"});
-    doc.setFontSize(40).setTextColor(0, 94, 184).text(name, 421, 280, {align:"center"});
-    doc.setFontSize(16).setTextColor(0).setFont("helvetica", "normal").text("For attending sessions on 28 April 2026", 421, 330, {align:"center"});
-    if(!isSpeaker && Array.isArray(detail)) {
-        doc.setFontSize(10); let y = 360;
-        detail.slice(0, 8).forEach(s => { doc.text(`• ${s}`, 421, y, {align:"center"}); y+=18; });
-    }
-    doc.text("Clinical Audit Lead: Mohamad Aly", 421, 530, {align:"center"});
-    doc.save(`${name.replace(/\s+/g, '_')}_Cert.pdf`);
-}
-
-setInterval(forceRenderAgenda, 1000);
-window.onload = forceRenderAgenda;
+// Run immediately
+window.onload = initializeApp;
+// Force check every 2 seconds in case GitHub script loading lags
+setInterval(initializeApp, 2000);
 </script>
-</body>
-</html>
